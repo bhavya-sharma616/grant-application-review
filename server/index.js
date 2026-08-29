@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const protect = require("./middleware/authMiddleware");
 const allowRoles = require("./middleware/roleMiddleware");
 const authRoutes = require("./routes/authRoutes");
+const applicationRoutes = require("./routes/applicationRoutes");
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.get('/',(reqq,res)=>{
 });
 
 app.use("/api/auth",authRoutes);
+app.use("/api/applications", applicationRoutes);
 
 // Any logged-in user can access this route
 app.get("/api/test/protected", protect, (req, res) => {
