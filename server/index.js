@@ -6,6 +6,9 @@ const protect = require("./middleware/authMiddleware");
 const allowRoles = require("./middleware/roleMiddleware");
 const authRoutes = require("./routes/authRoutes");
 const applicationRoutes = require("./routes/applicationRoutes");
+const conflictRoutes = require("./routes/conflictRoutes");
+const assignmentRoutes = require("./routes/assignmentRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 
 const app = express();
 
@@ -17,6 +20,9 @@ app.get('/',(reqq,res)=>{
 
 app.use("/api/auth",authRoutes);
 app.use("/api/applications", applicationRoutes);
+app.use("/api/conflicts", conflictRoutes);
+app.use("/api/assignments", assignmentRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // Any logged-in user can access this route
 app.get("/api/test/protected", protect, (req, res) => {

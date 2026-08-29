@@ -1,4 +1,5 @@
 const express = require("express");
+const { updateApplicationStatus } = require("../controllers/statusController");
 
 const {
   createApplication,
@@ -19,6 +20,13 @@ router.post(
   protect,
   allowRoles("PROGRAM_OFFICER"),
   createApplication
+);
+
+router.patch(
+  "/:id/status",
+  protect,
+  allowRoles("PROGRAM_OFFICER"),
+  updateApplicationStatus
 );
 
 router.get(
