@@ -1,4 +1,5 @@
 const GrantApplication = require("../models/GrantApplication");
+const Assignment = require("../models/Assignment");
 
 // Create application
 const createApplication = async (req, res) => {
@@ -41,11 +42,119 @@ const createApplication = async (req, res) => {
   }
 };
 
+// Get applications with search, filters, sorting and pagination
+const getApplications = async (req, res) => {
+  try {
+    const {
+      search = "",
+      fundingRound,
+      status,
+      owner,
+      overdue,
+      sortBy = "submissionDate",
+      order = "desc",
+      page = 1,
+      limit = 10,
+      archived = "false"
+    } = req.query;
+    
+
+    const query = {};
+query.isArchived = archived === "true";
+    // Reviewers can only see applications assigned to them
+    if (req.user.role === "REVIEWER") {
+      const assignments = await Assignment.find({
+        reviewer: req.user._id,
+        isActive: true,
+      }).select("application");
+
+      const applicationIds = assignments.map(
+        (assignment) => assignment.application
+      );
+
+      query._id = { $in: applicationIds };
+    }
+
+    // Search by organization name or contact email
+    if (search.trim()) {
+      query.$or = [
+        {
+          applicantOrganizationName: {
+            $regex: search.trim(),
+            $options: "i",
+          },
+        },
+        {
+          contactEmail: {
+            $regex: search.trim(),
+            $options: "i",
+          },
+        },
+      ];
+    }
+
+    // Funding round filter
+    if (fundingRound) {
+      query.fundingRound = fundingRound;
+    }
+
+    // Status filter
+    if (status) {
+      query.status = status;
+    }
+
+    // Owner filter - only useful for Program Officers
+    if (owner && req.user.role === "PROGRAM_OFFICER") {
+      query.owner = owner;
+    }
+
+    const pageNumber = Math.max(Number(page), 1);
+    const limitNumber = Math.max(Number(limit), 1);
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // Only allow valid sorting fields
+    const allowedSortFields = [
+      "submissionDate",
+      "amountRequested",
+      "status",
+    ];
+
+    const safeSortBy = allowedSortFields.includes(sortBy)
+      ? sortBy
+      : "submissionDate";
+
+    const sortOrder = order === "asc" ? 1 : -1;
+
+    const total = await GrantApplication.countDocuments(query);
+
+    const applications = await GrantApplication.find(query)
+      .populate("owner", "name email")
+      .sort({ [safeSortBy]: sortOrder })
+      .skip(skip)
+      .limit(limitNumber);
+
+    return res.json({
+      applications,
+      total,
+      page: pageNumber,
+      limit: limitNumber,
+      totalPages: Math.ceil(total / limitNumber),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch applications",
+      error: error.message,
+    });
+  }
+};
+
 // Get one application
 const getApplicationById = async (req, res) => {
   try {
-    const application = await GrantApplication.findById(req.params.id)
-      .populate("owner", "name email role");
+    const application = await GrantApplication.findById(req.params.id).populate(
+      "owner",
+      "name email role",
+    );
 
     if (!application) {
       return res.status(404).json({
@@ -154,8 +263,11 @@ const restoreApplication = async (req, res) => {
   }
 };
 
+
+
 module.exports = {
   createApplication,
+  getApplications,
   getApplicationById,
   updateApplication,
   archiveApplication,

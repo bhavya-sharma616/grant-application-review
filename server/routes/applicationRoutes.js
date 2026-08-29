@@ -3,6 +3,7 @@ const { updateApplicationStatus } = require("../controllers/statusController");
 
 const {
   createApplication,
+  getApplications,
   getApplicationById,
   updateApplication,
   archiveApplication,
@@ -28,6 +29,8 @@ router.patch(
   allowRoles("PROGRAM_OFFICER"),
   updateApplicationStatus
 );
+
+router.get("/", protect, getApplications);
 
 router.get(
   "/:id",
