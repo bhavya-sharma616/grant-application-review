@@ -162,9 +162,16 @@ const completeReview = async (req, res) => {
     review.status = "COMPLETED";
     await review.save();
 
+    const application = await GrantApplication.findById(review.application);
+
+    if (application) {
+      application.status = "DECIDED";
+      await application.save();
+    }
+
     await ApplicationHistory.create({
       application: review.application,
-      action: "COMMENT_ADDED",
+      action: "REVIEW_COMPLETED",
       performedBy: req.user._id,
       comment: review.comments,
     });
@@ -271,7 +278,7 @@ const exportReviewsCSV = async (req, res) => {
     res.setHeader("Content-Type", "text/csv");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="${fundingRound}-completed-reviews.csv"`
+      `attachment; filename="${fundingRound}-completed-reviews.csv"`,
     );
 
     return res.send(csv);
@@ -288,5 +295,5 @@ module.exports = {
   updateReview,
   completeReview,
   getCompletedReviews,
-  exportReviewsCSV
+  exportReviewsCSV,
 };

@@ -2,9 +2,11 @@ import Sidebar from "../components/Sidebar";
 import "./Applications.css";
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 function Applications() {
   const user = JSON.parse(localStorage.getItem("user"));
+  const navigate = useNavigate();
 
   const [applications, setApplications] = useState([]);
   const [search, setSearch] = useState("");
@@ -26,6 +28,16 @@ function Applications() {
     fundingRound: "",
     amountRequested: "",
     submissionDate: "",
+  });
+
+  const [assignments, setAssignments] = useState([]);
+  const [reviewers, setReviewers] = useState([]);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assignmentLoading, setAssignmentLoading] = useState(false);
+
+  const [assignmentForm, setAssignmentForm] = useState({
+    reviewerId: "",
+    dueDate: "",
   });
 
   const handleLogout = () => {
@@ -107,9 +119,34 @@ function Applications() {
       );
     }
   };
+
+  const handleSearch = () => {
+    setPage(1);
+    fetchApplications();
+  };
+
   useEffect(() => {
     fetchApplications();
   }, [fundingRound, status, sortBy, order, page]);
+
+  const fetchAssignments = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await api.get("/assignments/application/" + id, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setAssignments(response.data);
+  } catch (error) {
+    console.error(
+      "Failed to fetch assignments:",
+      error.response?.data || error.message,
+    );
+  }
+};
 
   return (
     <div className="dashboard-layout">
@@ -144,8 +181,7 @@ function Applications() {
                 onChange={(e) => setSearch(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    setPage(1);
-                    fetchApplications();
+                    handleSearch();
                   }
                 }}
               />
@@ -181,13 +217,18 @@ function Applications() {
             <select
               value={`${sortBy}-${order}`}
               onChange={(e) => {
-                setSort(e.target.value);
+                const [newSortBy, newOrder] = e.target.value.split("-");
+                setSortBy(newSortBy);
+                setOrder(newOrder);
                 setPage(1);
               }}
             >
-              <option value="submission_date">Sort by Submission Date</option>
-              <option value="amount">Sort by Amount Requested</option>
-              <option value="status">Sort by Status</option>
+              <option value="submissionDate-desc">Newest Submission</option>
+              <option value="submissionDate-asc">Oldest Submission</option>
+              <option value="amountRequested-desc">Highest Amount</option>
+              <option value="amountRequested-asc">Lowest Amount</option>
+              <option value="status-asc">Status A-Z</option>
+              <option value="status-desc">Status Z-A</option>
             </select>
           </section>
 
@@ -230,13 +271,13 @@ function Applications() {
                         <td>
                           <div className="organization-cell">
                             <strong
-  className="application-link"
-  onClick={() =>
-    (window.location.href = `/applications/${application._id}`)
-  }
->
-  {application.applicantOrganizationName}
-</strong>
+                              className="application-link"
+                              onClick={() =>
+                                navigate(`/applications/${application._id}`)
+                              }
+                            >
+                              {application.applicantOrganizationName}
+                            </strong>
                             <span>{application.contactEmail}</span>
                           </div>
                         </td>

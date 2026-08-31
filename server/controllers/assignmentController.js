@@ -51,6 +51,7 @@ const assignReviewer = async (req, res) => {
     const existingAssignment = await Assignment.findOne({
       application: applicationId,
       reviewer: reviewerId,
+      isActive: true,
     });
 
     if (existingAssignment) {
@@ -79,6 +80,9 @@ const assignReviewer = async (req, res) => {
       dueDate,
     });
 
+    application.status = "UNDER_REVIEW";
+await application.save();
+
     await ApplicationHistory.create({
       application: applicationId,
       action: "REVIEWER_ASSIGNED",
@@ -103,6 +107,7 @@ const getMyAssignments = async (req, res) => {
   try {
     const assignments = await Assignment.find({
       reviewer: req.user._id,
+      isActive: true,
     })
       .populate("application")
       .sort({ dueDate: 1 });
@@ -322,8 +327,7 @@ const bulkAssignReviewers = async (req, res) => {
       message: "Bulk reviewer assignment completed",
       fundingRound,
       totalApplications: applications.length,
-      totalAssignmentsAttempted:
-        applications.length * reviewerIds.length,
+      totalAssignmentsAttempted: applications.length * reviewerIds.length,
       results,
     });
   } catch (error) {
@@ -334,10 +338,47 @@ const bulkAssignReviewers = async (req, res) => {
   }
 };
 
+const getReviewers = async (req, res) => {
+  try {
+    const reviewers = await User.find({
+      role: "REVIEWER",
+    }).select("name email");
+
+    return res.json({
+      reviewers,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch reviewers",
+      error: error.message,
+    });
+  }
+};
+
+const getApplicationAssignments = async (req, res) => {
+  try {
+    const assignments = await Assignment.find({
+      application: req.params.applicationId,
+      isActive: true,
+    }).populate("reviewer", "name email");
+
+    return res.json({
+      assignments,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch application assignments",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   assignReviewer,
   getMyAssignments,
   updateAssignmentDueDate,
   removeAssignment,
-  bulkAssignReviewers
+  bulkAssignReviewers,
+  getReviewers,
+  getApplicationAssignments,
 };

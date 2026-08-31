@@ -7,15 +7,43 @@ import {
   BarChart3,
 } from "lucide-react";
 import "./Dashboard.css";
+import { useEffect, useState } from "react";
+import api from "../services/api";
 
 function Dashboard() {
   const user = JSON.parse(localStorage.getItem("user"));
+
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     window.location.href = "/login";
   };
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const response = await api.get("/dashboard");
+        setDashboard(response.data);
+      } catch (error) {
+        setError(error.response?.data?.message || "Failed to load dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
+  if (loading) {
+    return <div className="dashboard-loading">Loading dashboard...</div>;
+  }
+
+  if (error) {
+    return <div className="dashboard-error">{error}</div>;
+  }
 
   const stats = [
     {
@@ -97,37 +125,33 @@ function Dashboard() {
           </div>
 
           <div className="status-grid">
-            <div className="status-item">
-              <span className="status-dot submitted"></span>
-              <div>
-                <strong>Submitted</strong>
-                <p>4 applications</p>
-              </div>
-            </div>
+            {["SUBMITTED", "ASSIGNED", "UNDER_REVIEW", "DECIDED"].map(
+              (status) => {
+                const item = dashboard.byStatus.find(
+                  (entry) => entry._id === status,
+                );
 
-            <div className="status-item">
-              <span className="status-dot assigned"></span>
-              <div>
-                <strong>Assigned</strong>
-                <p>3 applications</p>
-              </div>
-            </div>
+                const labels = {
+                  SUBMITTED: "Submitted",
+                  ASSIGNED: "Assigned",
+                  UNDER_REVIEW: "Under Review",
+                  DECIDED: "Decided",
+                };
 
-            <div className="status-item">
-              <span className="status-dot reviewing"></span>
-              <div>
-                <strong>Under Review</strong>
-                <p>3 applications</p>
-              </div>
-            </div>
+                return (
+                  <div className="status-item" key={status}>
+                    <span
+                      className={`status-dot ${status.toLowerCase()}`}
+                    ></span>
 
-            <div className="status-item">
-              <span className="status-dot decided"></span>
-              <div>
-                <strong>Decided</strong>
-                <p>2 applications</p>
-              </div>
-            </div>
+                    <div>
+                      <strong>{labels[status]}</strong>
+                      <p>{item?.count || 0} applications</p>
+                    </div>
+                  </div>
+                );
+              },
+            )}
           </div>
         </section>
 
@@ -142,35 +166,29 @@ function Dashboard() {
             </div>
 
             <div className="round-list">
-              <div className="round-item">
-                <div className="round-info">
-                  <span>Spring 2026</span>
-                  <strong>6 applications</strong>
-                </div>
-                <div className="progress-track">
-                  <div className="progress-fill spring"></div>
-                </div>
-              </div>
+              {dashboard.byFundingRound.map((round) => {
+                const maxCount = Math.max(
+                  ...dashboard.byFundingRound.map((item) => item.count),
+                );
 
-              <div className="round-item">
-                <div className="round-info">
-                  <span>Summer 2026</span>
-                  <strong>4 applications</strong>
-                </div>
-                <div className="progress-track">
-                  <div className="progress-fill summer"></div>
-                </div>
-              </div>
+                const percentage = (round.count / maxCount) * 100;
 
-              <div className="round-item">
-                <div className="round-info">
-                  <span>Fall 2026</span>
-                  <strong>2 applications</strong>
-                </div>
-                <div className="progress-track">
-                  <div className="progress-fill fall"></div>
-                </div>
-              </div>
+                return (
+                  <div className="round-item" key={round._id}>
+                    <div className="round-info">
+                      <span>{round._id}</span>
+                      <strong>{round.count} applications</strong>
+                    </div>
+
+                    <div className="progress-track">
+                      <div
+                        className="progress-fill"
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

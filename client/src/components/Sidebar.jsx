@@ -26,6 +26,7 @@ function Sidebar({ user, onLogout }) {
       label: "My Reviews",
       icon: ClipboardCheck,
       path: "/reviews",
+      roles: ["REVIEWER"],
     },
     {
       label: "Alerts",
@@ -61,26 +62,28 @@ function Sidebar({ user, onLogout }) {
 
         {/* Navigation */}
         <nav className="sidebar-nav">
-          {navItems.map((item) => {
-            const Icon = item.icon;
+          {navItems
+            .filter((item) => !item.roles || item.roles.includes(user?.role))
+            .map((item) => {
+              const Icon = item.icon;
 
-            return (
-              <NavLink
-                key={item.label}
-                to={item.path}
-                className={({ isActive }) =>
-                  `nav-item ${isActive ? "active" : ""}`
-                }
-              >
-                <Icon size={20} />
-                <span>{item.label}</span>
+              return (
+                <NavLink
+                  key={item.label}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `nav-item ${isActive ? "active" : ""}`
+                  }
+                >
+                  <Icon size={20} />
+                  <span>{item.label}</span>
 
-                {item.label === "Alerts" && (
-                  <span className="alert-badge">0</span>
-                )}
-              </NavLink>
-            );
-          })}
+                  {item.label === "Alerts" && (
+                    <span className="alert-badge">0</span>
+                  )}
+                </NavLink>
+              );
+            })}
         </nav>
       </div>
 

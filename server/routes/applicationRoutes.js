@@ -32,7 +32,6 @@ router.patch(
 
 router.get("/", protect, getApplications);
 
-
 router.get(
   "/:id",
   protect,

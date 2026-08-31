@@ -4,16 +4,25 @@ import Dashboard from "./pages/Dashboard";
 import Applications from "./pages/Applications";
 import ApplicationDetails from "./pages/ApplicationDetails";
 import ArchivedApplications from "./pages/ArchivedApplications";
+import ProtectedRoute from "./components/ProtectedRoute";
+import ReviewApplication from "./pages/ReviewApplication";
+import MyReviews from "./pages/MyReviews";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/applications" element={<Applications />} />
-        <Route path="/applications/:id" element={<ApplicationDetails />} />
-        <Route path="/archived" element={<ArchivedApplications />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/applications" element={<Applications />} />
+          <Route path="/applications/:id" element={<ApplicationDetails />} />
+          <Route path="/archived" element={<ArchivedApplications />} />
+          <Route path="/reviews" element={<MyReviews/>} />
+          <Route path="/reviews/:id" element={<ReviewApplication />} />
+        </Route>
+
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

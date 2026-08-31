@@ -6,6 +6,8 @@ const {
   updateAssignmentDueDate,
   removeAssignment,
   bulkAssignReviewers,
+  getReviewers,
+  getApplicationAssignments,
 } = require("../controllers/assignmentController");
 
 const protect = require("../middleware/authMiddleware");
@@ -37,6 +39,13 @@ router.post(
   bulkAssignReviewers
 );
 
+router.get(
+  "/reviewers",
+  protect,
+  allowRoles("PROGRAM_OFFICER"),
+  getReviewers
+);
+
 // Program Officer changes due date
 router.patch(
   "/:id/due-date",
@@ -51,6 +60,13 @@ router.delete(
   protect,
   allowRoles("PROGRAM_OFFICER"),
   removeAssignment
+);
+
+router.get(
+  "/application/:applicationId",
+  protect,
+  allowRoles("PROGRAM_OFFICER"),
+  getApplicationAssignments
 );
 
 module.exports = router;
