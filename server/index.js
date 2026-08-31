@@ -9,6 +9,10 @@ const applicationRoutes = require("./routes/applicationRoutes");
 const conflictRoutes = require("./routes/conflictRoutes");
 const assignmentRoutes = require("./routes/assignmentRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const historyRoutes = require("./routes/historyRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const alertRoutes = require("./routes/alertRoutes");
+const exportRoutes = require("./routes/exportRoutes");
 
 const app = express();
 
@@ -24,6 +28,10 @@ app.use("/api/applications", applicationRoutes);
 app.use("/api/conflicts", conflictRoutes);
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/history", historyRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/alerts", alertRoutes);
+app.use("/api/export",exportRoutes);
 
 // Any logged-in user can access this route
 app.get("/api/test/protected", protect, (req, res) => {

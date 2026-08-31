@@ -5,6 +5,7 @@ const {
   updateReview,
   completeReview,
   getCompletedReviews,
+  exportReviewsCSV
 } = require("../controllers/reviewController");
 
 const protect = require("../middleware/authMiddleware");
@@ -41,6 +42,14 @@ router.get(
   "/application/:applicationId",
   protect,
   getCompletedReviews
+);
+
+// Program Officer exports completed reviews for a funding round
+router.get(
+  "/export/:fundingRound",
+  protect,
+  allowRoles("PROGRAM_OFFICER"),
+  exportReviewsCSV
 );
 
 module.exports = router;

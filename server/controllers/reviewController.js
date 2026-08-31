@@ -1,6 +1,7 @@
-const Review = require("../models/review");
+const Review = require("../models/Review");
 const Assignment = require("../models/Assignment");
 const GrantApplication = require("../models/GrantApplication");
+const ApplicationHistory = require("../models/ApplicationHistory");
 
 // Create or save a draft review
 const createReview = async (req, res) => {
@@ -145,9 +146,28 @@ const completeReview = async (req, res) => {
       });
     }
 
+    if (
+      !review.impactScore ||
+      !review.feasibilityScore ||
+      !review.budgetJustificationScore ||
+      !review.comments ||
+      !review.comments.trim()
+    ) {
+      return res.status(400).json({
+        message:
+          "All scores and comments are required before completing the review",
+      });
+    }
+
     review.status = "COMPLETED";
     await review.save();
 
+    await ApplicationHistory.create({
+      application: review.application,
+      action: "COMMENT_ADDED",
+      performedBy: req.user._id,
+      comment: review.comments,
+    });
     // Review is finished, so this assignment is no longer active
     await Assignment.findOneAndUpdate(
       {
@@ -156,7 +176,7 @@ const completeReview = async (req, res) => {
       },
       {
         isActive: false,
-      }
+      },
     );
 
     return res.json({
@@ -190,9 +210,83 @@ const getCompletedReviews = async (req, res) => {
   }
 };
 
+// Export all completed reviews for a funding round as CSV
+const exportReviewsCSV = async (req, res) => {
+  try {
+    const { fundingRound } = req.params;
+
+    if (!fundingRound) {
+      return res.status(400).json({
+        message: "Funding round is required",
+      });
+    }
+
+    const applications = await GrantApplication.find({
+      fundingRound,
+      isArchived: false,
+    }).select("_id applicantOrganizationName fundingRound");
+
+    const applicationIds = applications.map((application) => application._id);
+
+    const reviews = await Review.find({
+      application: { $in: applicationIds },
+      status: "COMPLETED",
+    })
+      .populate("reviewer", "name email")
+      .populate("application", "applicantOrganizationName fundingRound")
+      .sort({ createdAt: 1 });
+
+    const header = [
+      "Application",
+      "Reviewer",
+      "Reviewer Email",
+      "Funding Round",
+      "Impact",
+      "Feasibility",
+      "Budget Justification",
+      "Comments",
+    ];
+
+    const escapeCSV = (value) => {
+      const text = String(value ?? "");
+      return `"${text.replace(/"/g, '""')}"`;
+    };
+
+    const rows = reviews.map((review) => [
+      review.application?.applicantOrganizationName,
+      review.reviewer?.name,
+      review.reviewer?.email,
+      review.application?.fundingRound,
+      review.impactScore,
+      review.feasibilityScore,
+      review.budgetJustificationScore,
+      review.comments,
+    ]);
+
+    const csv = [
+      header.map(escapeCSV).join(","),
+      ...rows.map((row) => row.map(escapeCSV).join(",")),
+    ].join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${fundingRound}-completed-reviews.csv"`
+    );
+
+    return res.send(csv);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to export reviews",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createReview,
   updateReview,
   completeReview,
   getCompletedReviews,
+  exportReviewsCSV
 };

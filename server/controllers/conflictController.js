@@ -1,5 +1,6 @@
 const Conflict = require("../models/Conflict");
 const GrantApplication = require("../models/GrantApplication");
+const Assignment = require("../models/Assignment");
 
 const declareConflict = async (req, res) => {
   try {
@@ -17,6 +18,18 @@ const declareConflict = async (req, res) => {
     if (!application) {
       return res.status(404).json({
         message: "Application not found",
+      });
+    }
+
+    const assignment = await Assignment.findOne({
+      application: applicationId,
+      reviewer: req.user._id,
+      isActive: true,
+    });
+
+    if (!assignment) {
+      return res.status(403).json({
+        message: "You are not assigned to this application",
       });
     }
 

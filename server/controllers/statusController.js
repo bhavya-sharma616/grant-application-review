@@ -1,6 +1,7 @@
 const GrantApplication = require("../models/GrantApplication");
-const Review = require("../models/review");
+const Review = require("../models/Review");
 const Assignment = require("../models/Assignment");
+const ApplicationHistory = require("../models/ApplicationHistory");
 
 const updateApplicationStatus = async (req, res) => {
   try {
@@ -41,8 +42,7 @@ const updateApplicationStatus = async (req, res) => {
     else if (currentStatus === "ASSIGNED") {
       if (status !== "UNDER_REVIEW") {
         return res.status(400).json({
-          message:
-            "Application can only move from ASSIGNED to UNDER_REVIEW",
+          message: "Application can only move from ASSIGNED to UNDER_REVIEW",
         });
       }
     }
@@ -51,8 +51,7 @@ const updateApplicationStatus = async (req, res) => {
     else if (currentStatus === "UNDER_REVIEW") {
       if (status !== "DECIDED") {
         return res.status(400).json({
-          message:
-            "Application can only move from UNDER_REVIEW to DECIDED",
+          message: "Application can only move from UNDER_REVIEW to DECIDED",
         });
       }
 
@@ -76,8 +75,18 @@ const updateApplicationStatus = async (req, res) => {
       });
     }
 
+    const oldStatus = application.status;
+
     application.status = status;
     await application.save();
+
+    await ApplicationHistory.create({
+      application: application._id,
+      action: "STATUS_CHANGED",
+      performedBy: req.user._id,
+      oldStatus,
+      newStatus: status,
+    });
 
     return res.json({
       message: "Application status updated successfully",

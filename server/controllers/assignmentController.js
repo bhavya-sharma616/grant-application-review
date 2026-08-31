@@ -2,6 +2,7 @@ const Assignment = require("../models/Assignment");
 const Conflict = require("../models/Conflict");
 const User = require("../models/User");
 const GrantApplication = require("../models/GrantApplication");
+const ApplicationHistory = require("../models/ApplicationHistory");
 
 // Assign a reviewer to an application
 const assignReviewer = async (req, res) => {
@@ -76,6 +77,13 @@ const assignReviewer = async (req, res) => {
       application: applicationId,
       reviewer: reviewerId,
       dueDate,
+    });
+
+    await ApplicationHistory.create({
+      application: applicationId,
+      action: "REVIEWER_ASSIGNED",
+      performedBy: req.user._id,
+      reviewer: reviewerId,
     });
 
     return res.status(201).json({
@@ -169,6 +177,13 @@ const removeAssignment = async (req, res) => {
 
     await assignment.deleteOne();
 
+    await ApplicationHistory.create({
+      application: assignment.application,
+      action: "REVIEWER_REMOVED",
+      performedBy: req.user._id,
+      reviewer: assignment.reviewer,
+    });
+
     return res.json({
       message: "Assignment removed successfully",
     });
@@ -180,9 +195,149 @@ const removeAssignment = async (req, res) => {
   }
 };
 
+// Bulk assign reviewers to every application in a funding round
+const bulkAssignReviewers = async (req, res) => {
+  try {
+    const { fundingRound, reviewerIds, dueDate } = req.body;
+
+    if (
+      !fundingRound ||
+      !Array.isArray(reviewerIds) ||
+      reviewerIds.length === 0 ||
+      !dueDate
+    ) {
+      return res.status(400).json({
+        message: "Funding round, reviewers and due date are required",
+      });
+    }
+
+    // Find all applications in the selected funding round
+    const applications = await GrantApplication.find({
+      fundingRound,
+      isArchived: false,
+    });
+
+    if (applications.length === 0) {
+      return res.status(404).json({
+        message: "No applications found in this funding round",
+      });
+    }
+
+    const results = [];
+
+    for (const reviewerId of reviewerIds) {
+      const reviewer = await User.findById(reviewerId);
+
+      if (!reviewer || reviewer.role !== "REVIEWER") {
+        for (const application of applications) {
+          results.push({
+            applicationId: application._id,
+            reviewerId,
+            status: "REFUSED",
+            reason: "Selected user is not a valid reviewer",
+          });
+        }
+
+        continue;
+      }
+
+      for (const application of applications) {
+        // Check conflict of interest
+        const conflict = await Conflict.findOne({
+          application: application._id,
+          reviewer: reviewerId,
+        });
+
+        if (conflict) {
+          results.push({
+            applicationId: application._id,
+            reviewerId,
+            status: "REFUSED",
+            reason: "Reviewer has declared a conflict of interest",
+          });
+
+          continue;
+        }
+
+        // Check duplicate assignment
+        const existingAssignment = await Assignment.findOne({
+          application: application._id,
+          reviewer: reviewerId,
+        });
+
+        if (existingAssignment) {
+          results.push({
+            applicationId: application._id,
+            reviewerId,
+            status: "REFUSED",
+            reason: "Reviewer is already assigned to this application",
+          });
+
+          continue;
+        }
+
+        // Check active assignment limit
+        const activeAssignmentCount = await Assignment.countDocuments({
+          reviewer: reviewerId,
+          isActive: true,
+        });
+
+        if (activeAssignmentCount >= 5) {
+          results.push({
+            applicationId: application._id,
+            reviewerId,
+            status: "REFUSED",
+            reason: "Reviewer already has 5 active assignments",
+          });
+
+          continue;
+        }
+
+        // Create assignment
+        const assignment = await Assignment.create({
+          application: application._id,
+          reviewer: reviewerId,
+          dueDate,
+          isActive: true,
+        });
+
+        // Add immutable history
+        await ApplicationHistory.create({
+          application: application._id,
+          action: "REVIEWER_ASSIGNED",
+          performedBy: req.user._id,
+          reviewer: reviewerId,
+        });
+
+        results.push({
+          applicationId: application._id,
+          reviewerId,
+          assignmentId: assignment._id,
+          status: "SUCCEEDED",
+        });
+      }
+    }
+
+    return res.status(201).json({
+      message: "Bulk reviewer assignment completed",
+      fundingRound,
+      totalApplications: applications.length,
+      totalAssignmentsAttempted:
+        applications.length * reviewerIds.length,
+      results,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to bulk assign reviewers",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   assignReviewer,
   getMyAssignments,
   updateAssignmentDueDate,
   removeAssignment,
+  bulkAssignReviewers
 };

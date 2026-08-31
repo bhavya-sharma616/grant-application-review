@@ -1,5 +1,6 @@
 const GrantApplication = require("../models/GrantApplication");
 const Assignment = require("../models/Assignment");
+const ApplicationHistory = require("../models/ApplicationHistory");
 
 // Create application
 const createApplication = async (req, res) => {
@@ -33,6 +34,12 @@ const createApplication = async (req, res) => {
       owner: req.user._id,
     });
 
+    await ApplicationHistory.create({
+      application: application._id,
+      action: "CREATED",
+      performedBy: req.user._id,
+    });
+
     return res.status(201).json(application);
   } catch (error) {
     return res.status(500).json({
@@ -55,12 +62,11 @@ const getApplications = async (req, res) => {
       order = "desc",
       page = 1,
       limit = 10,
-      archived = "false"
+      archived = "false",
     } = req.query;
-    
 
     const query = {};
-query.isArchived = archived === "true";
+    query.isArchived = archived === "true";
     // Reviewers can only see applications assigned to them
     if (req.user.role === "REVIEWER") {
       const assignments = await Assignment.find({
@@ -69,7 +75,7 @@ query.isArchived = archived === "true";
       }).select("application");
 
       const applicationIds = assignments.map(
-        (assignment) => assignment.application
+        (assignment) => assignment.application,
       );
 
       query._id = { $in: applicationIds };
@@ -113,11 +119,7 @@ query.isArchived = archived === "true";
     const skip = (pageNumber - 1) * limitNumber;
 
     // Only allow valid sorting fields
-    const allowedSortFields = [
-      "submissionDate",
-      "amountRequested",
-      "status",
-    ];
+    const allowedSortFields = ["submissionDate", "amountRequested", "status"];
 
     const safeSortBy = allowedSortFields.includes(sortBy)
       ? sortBy
@@ -262,8 +264,6 @@ const restoreApplication = async (req, res) => {
     });
   }
 };
-
-
 
 module.exports = {
   createApplication,

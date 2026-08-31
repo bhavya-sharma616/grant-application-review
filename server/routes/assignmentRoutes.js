@@ -5,6 +5,7 @@ const {
   getMyAssignments,
   updateAssignmentDueDate,
   removeAssignment,
+  bulkAssignReviewers,
 } = require("../controllers/assignmentController");
 
 const protect = require("../middleware/authMiddleware");
@@ -26,6 +27,14 @@ router.post(
   protect,
   allowRoles("PROGRAM_OFFICER"),
   assignReviewer
+);
+
+// Program Officer bulk assigns reviewers to a funding round
+router.post(
+  "/bulk",
+  protect,
+  allowRoles("PROGRAM_OFFICER"),
+  bulkAssignReviewers
 );
 
 // Program Officer changes due date
