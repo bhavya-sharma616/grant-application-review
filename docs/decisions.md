@@ -83,3 +83,27 @@ This document records decisions that actually shaped the Grant Application Revie
 - **Rejected:** Trying to enforce every business rule directly in the schema.
 
 - **Why:** Required fields, enum values, score ranges, and unique indexes fit naturally at the schema/database level. Rules such as checking active assignment limits, conflicts of interest, valid status transitions, and the number of completed reviews require querying multiple documents, so they belong in application business logic.
+
+---
+
+## Decision 11: Handle conflicts by deactivating the reviewer assignment
+
+### What I chose
+
+When a reviewer declares a conflict of interest for an application, the system records the conflict and immediately deactivates that reviewer's active assignment.
+
+### Why
+
+A reviewer who has declared a conflict should no longer be able to review the application. Deactivating the assignment removes the application from the reviewer's active workload while preserving the assignment record for audit purposes.
+
+### Reassignment behaviour
+
+The conflict record remains associated with the application and reviewer. When the Program Officer attempts to assign a reviewer, the backend checks for an existing conflict before creating the assignment.
+
+This prevents a reviewer who previously declared a conflict for an application from being assigned to the same application again.
+
+### Audit trail
+
+The conflict declaration is also recorded in the application history with the conflict reason. This allows the Program Officer to see that the reviewer withdrew because of a conflict and provides an audit trail of the workflow.
+
+---

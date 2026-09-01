@@ -186,41 +186,33 @@ React UI Updates
 
 ## What did you decide *not* to build, and why?
 
-The application was built incrementally within the assignment's limited time budget.
+The application was built incrementally within the assignment's time budget. I prioritised the core application architecture and then implemented the reviewer workflow on top of the application-management foundation.
 
-I decided to prioritise the core system architecture, authentication, role-based authorization, and application-management workflow before completing the more complex workflows.
+The implemented workflow now includes:
 
-The main application-management functionality was prioritised because it provided the foundation for the rest of the system. This included creating and managing grant applications, server-side filtering and pagination, viewing application details, editing applications, and archiving and restoring applications.
+* Reviewer assignment and due dates
+* Active assignment limits
+* Review draft creation and editing
+* Review completion and scoring
+* Conflict-of-interest declarations
+* Automatic deactivation of an assignment after a conflict is declared
+* Preventing a conflicted reviewer from being assigned to the same application again
+* Application history and audit events
+* Bulk reviewer assignment
+* CSV export of completed reviews
+* Application status lifecycle validation
+* Requiring at least three completed reviews before an application can be marked as `DECIDED`
 
-At the current stage of development, some required functionality is still being completed or has been deferred until the core workflows are stable. These areas include:
+Optional stretch features were intentionally left out to keep the scope focused on the required workflow. These include:
 
-- Completing the full reviewer workflow
-- Review scoring and completion rules
-- Conflict of interest handling
-- Reviewer assignment limits and assignment management
-- Bulk reviewer assignment
-- CSV export of completed reviews
-- Immutable application history and audit timeline
-- Overdue review alerts and alert dismissal behaviour
-- Final integration of dashboard statistics with live backend data
-- Production deployment
+* Applicant-facing application portal
+* Reviewer calibration reports
+* Configurable scoring rubrics
+* Public funded-project listings
+* Automatic reviewer matching
+* Applicant appeals process
+* Budget tracking against funding pools
+* Email notifications
+* Application anonymisation
 
-I chose not to build optional stretch features before completing the required functionality.
-
-The following stretch ideas were intentionally left out:
-
-- Applicant-facing application portal
-- Reviewer calibration reports
-- Configurable scoring rubrics
-- Public funded-project listings
-- Automatic reviewer matching
-- Applicant appeals process
-- Budget tracking against funding pools
-- Email notifications
-- Application anonymisation
-
-The reason for leaving these out was to avoid increasing the scope before the required workflows were complete.
-
-The backend architecture was organised into separate routes, controllers, middleware, and models so that the remaining features can be added incrementally without requiring a major restructuring of the application.
-
-This approach allowed the project to focus first on building a working foundation and then expand functionality feature by feature.
+The backend remains organised into separate routes, controllers, middleware, and models so that additional features can be added without requiring a major restructuring of the application.

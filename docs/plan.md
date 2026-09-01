@@ -132,38 +132,36 @@ Part of this session was spent improving the placement and appearance of actions
 
 ---
 
-## Session 5: Reviewer models and workflow foundation
+## Session 5: Reviewer workflow implementation
 
 ### Planned work
 
-- Create the Assignment model
-- Create the Review model
-- Create the Conflict model
-- Add reviewer/application relationships
-- Add compound unique indexes
-- Prepare the backend structure for reviewer-specific workflows
+* Implement reviewer assignment
+* Add reviewer assignment limits
+* Implement reviewer review workflow
+* Add draft and completed review states
+* Implement conflict-of-interest declarations
+* Deactivate assignments when a conflict is declared
+* Prevent conflicted reviewers from being reassigned
+* Add application history for reviewer actions
 
 ### Why this came next
 
-Reviewer assignments and reviews depend on both the application and user models already existing.
-
-Creating the data models first provides a foundation for implementing:
-
-- Reviewer assignments
-- Review scores
-- Draft and completed reviews
-- Conflict declarations
-- Assignment limits
+Once the application and user models were established, the reviewer workflow could be built on top of them. This was the next major dependency because assignments, reviews, conflicts, and review completion all depend on existing applications and authenticated reviewer accounts.
 
 ### Estimated time
 
-Approximately 2 hours.
+Approximately 3 hours.
 
 ### Actual time
 
-Approximately 1.5 to 2 hours.
+Approximately 3 to 4 hours.
 
----
+### Notes
+
+The reviewer workflow required coordination between assignments, reviews, conflicts, application status, and application history. Additional validation was added to ensure that reviewers can only review applications to which they are actively assigned and that a declared conflict prevents further review activity.
+
+A reviewer who declares a conflict has their active assignment deactivated, while the conflict record remains stored for audit purposes. The Program Officer can then assign another eligible reviewer, but cannot reassign the conflicted reviewer to the same application.
 
 ## Session 6: Dashboard and application polish
 
@@ -266,28 +264,24 @@ This reinforced the decision to work incrementally and test features as they wer
 
 # What was cut or deferred
 
-The assignment contains several complex workflows that require additional time and testing.
+The required application and reviewer workflows were prioritised and implemented. Some optional or stretch features were intentionally left out to keep the project scope manageable.
 
-The following areas were deferred or remain to be completed while prioritising the core application-management workflow:
+The following optional features were not implemented:
 
-- Full reviewer assignment management
-- Enforcing the maximum of five active assignments
-- Due-date updates and overdue assignment calculations
-- Full review draft and completion workflow
-- Preventing completed reviews from being edited
-- Full conflict-of-interest workflow integration with assignment blocking
-- Complete status lifecycle validation
-- Requiring three completed reviews before a decision
-- Bulk reviewer assignment with a per-assignment result report
-- CSV export of completed reviews
-- Immutable application history timeline
-- Overdue review alerts and dismissal behaviour
-- Complete live dashboard aggregation
-- Production deployment
+* Applicant-facing application portal
+* Reviewer calibration reports
+* Configurable scoring rubrics
+* Public funded-project listings
+* Automatic reviewer matching
+* Applicant appeals process
+* Budget tracking against funding pools
+* Email notifications
+* Application anonymisation
+* Production deployment
 
-I deliberately did not spend time on the optional stretch features because the required functionality was the priority.
+These features were left out because they would add additional product, data, testing, and infrastructure requirements without being necessary for the core grant application review workflow.
 
-The features that were cut or deferred were not removed because they were considered unimportant. They were deferred because several of them depend on the core models and workflows already implemented, and implementing them properly would require additional backend validation and testing.
+The implemented system instead focuses on the required application lifecycle, reviewer assignment, review completion, conflict-of-interest handling, application history, and decision workflow.
 
 ---
 

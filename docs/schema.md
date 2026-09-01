@@ -108,10 +108,13 @@ The `Assignment` collection represents the relationship between grant applicatio
 
 A compound unique index is defined on:
 
-- `application`
-- `reviewer`
+* `application`
+* `reviewer`
 
 This prevents the same reviewer from being assigned to the same application more than once.
+
+When a reviewer declares a conflict of interest, their active assignment is deactivated. The conflict record remains stored separately, so the Program Officer cannot assign the same reviewer to that application again.
+
 
 ---
 
@@ -295,6 +298,16 @@ Examples include:
 - A reviewer cannot exceed the active assignment limit
 - Completed reviews cannot be edited
 - Completed reviewer assignments cannot be removed
+
+Additional application-level workflow constraints include:
+
+* A reviewer must have an active assignment before creating or completing a review.
+* A reviewer who has declared a conflict cannot review the application.
+* A reviewer who has declared a conflict cannot be assigned to the same application again.
+* Declaring a conflict deactivates the reviewer's active assignment.
+* An application requires at least one reviewer assignment before moving to `ASSIGNED`.
+* An application requires at least three completed reviews before moving to `DECIDED`.
+* A reviewer can have a maximum of five active assignments.
 
 These rules require application logic because they involve multiple documents or depend on the current workflow state.
 
