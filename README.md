@@ -211,21 +211,33 @@ Additional project documentation is available in the `docs/` directory:
 
 ## Current Development Status
 
-The core application-management workflow is implemented, including:
+The core application-management and reviewer workflow is implemented, including:
 
-- Application creation
-- Application listing
-- Application details
-- Editing applications
-- Search and filtering
-- Sorting
-- Server-side pagination
-- Archiving
-- Restoring archived applications
+* Application creation
+* Application listing
+* Application details
+* Editing applications
+* Search and filtering
+* Sorting
+* Server-side pagination
+* Archiving
+* Restoring archived applications
+* Reviewer assignment with due dates
+* Maximum of five active assignments per reviewer
+* Review draft creation and editing
+* Review completion with scoring and comments
+* Preventing completed reviews from being edited
+* Conflict-of-interest declarations
+* Automatically deactivating an assignment when a conflict is declared
+* Preventing a conflicted reviewer from being assigned to the same application again
+* Completed review display for Program Officers
+* Application history/audit trail
+* Bulk reviewer assignment with per-assignment results
+* CSV export of completed reviews
+* Application status workflow validation
+* Requiring at least three completed reviews before an application can be marked as `DECIDED`
 
-The project also includes the foundational data models for reviewer assignments, reviews, and conflicts.
-
-Additional reviewer workflows, workflow validation, history, alerts, bulk operations, and deployment can be added on top of the existing application structure.
+The remaining work is focused on final UI polish, review of edge cases, alerts/notifications where required, and production deployment.
 
 ---
 
