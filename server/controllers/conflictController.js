@@ -1,7 +1,7 @@
 const Conflict = require("../models/Conflict");
 const GrantApplication = require("../models/GrantApplication");
 const Assignment = require("../models/Assignment");
-
+const ApplicationHistory = require("../models/ApplicationHistory");
 const declareConflict = async (req, res) => {
   try {
     const { reason } = req.body;
@@ -36,7 +36,28 @@ const declareConflict = async (req, res) => {
     const conflict = await Conflict.create({
       application: applicationId,
       reviewer: req.user._id,
-      reason,
+      reason: reason.trim(),
+    });
+
+    // Remove reviewer from active assignment
+    await Assignment.findOneAndUpdate(
+      {
+        application: applicationId,
+        reviewer: req.user._id,
+        isActive: true,
+      },
+      {
+        isActive: false,
+      },
+    );
+
+    // Tell PO through application audit trail
+    await ApplicationHistory.create({
+      application: applicationId,
+      action: "CONFLICT_DECLARED",
+      performedBy: req.user._id,
+      reviewer : req.user._id,
+      comment: reason.trim(),
     });
 
     return res.status(201).json({
@@ -58,4 +79,26 @@ const declareConflict = async (req, res) => {
   }
 };
 
-module.exports = { declareConflict };
+const getConflicts = async (req, res) => {
+  try {
+    const conflicts = await Conflict.find({
+      reviewer: req.user._id,
+    })
+      .populate(
+        "application",
+        "applicantOrganizationName contactEmail fundingRound",
+      )
+      .sort({ createdAt: -1 });
+
+    return res.json({
+      conflicts,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch conflicts",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { declareConflict, getConflicts };

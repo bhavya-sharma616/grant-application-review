@@ -1,0 +1,280 @@
+/* =========================
+   ARCHIVED APPLICATIONS
+========================= */
+
+.applications-main {
+  flex: 1;
+  min-height: 100vh;
+  padding: 38px 42px;
+  background: #f7f6fa;
+}
+
+/* Header */
+
+.applications-header {
+  margin-bottom: 28px;
+}
+
+.applications-header .section-label {
+  margin: 0 0 8px;
+}
+
+.applications-header h1 {
+  margin: 0;
+  color: #25233a;
+  font-size: 30px;
+  font-weight: 750;
+  letter-spacing: -0.5px;
+}
+
+.applications-header > div > p:last-child {
+  margin: 8px 0 0;
+  color: #858291;
+  font-size: 13px;
+}
+
+/* =========================
+   TABLE CARD
+========================= */
+
+.applications-table-card {
+  overflow: hidden;
+
+  border: 1px solid #e7e4ed;
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  box-shadow: 0 4px 18px rgba(40, 36, 58, 0.035);
+}
+
+/* Table header */
+
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 22px 24px;
+
+  border-bottom: 1px solid #eeeaf2;
+}
+
+.table-header h2 {
+  margin: 0;
+
+  color: #302d3b;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.table-header p {
+  margin: 5px 0 0;
+
+  color: #9995a4;
+  font-size: 12px;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-wrapper table {
+  width: 100%;
+  min-width: 900px;
+
+  border-collapse: collapse;
+}
+
+.table-wrapper th {
+  padding: 13px 20px;
+
+  background: #faf9fc;
+
+  border-bottom: 1px solid #ebe8f0;
+
+  color: #8c8998;
+
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.7px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.table-wrapper td {
+  padding: 17px 20px;
+
+  border-bottom: 1px solid #f0eef3;
+
+  color: #656272;
+  font-size: 12px;
+
+  vertical-align: middle;
+}
+
+.table-wrapper tbody tr {
+  transition: background 0.16s ease;
+}
+
+.table-wrapper tbody tr:hover {
+  background: #faf9fd;
+}
+
+.table-wrapper tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* =========================
+   ORGANIZATION
+========================= */
+
+.organization-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.organization-cell strong {
+  color: #302d3b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.organization-cell span {
+  color: #aaa6b3;
+  font-size: 11px;
+}
+
+/* =========================
+   AMOUNT
+========================= */
+
+.amount-cell {
+  color: #403b58 !important;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* =========================
+   STATUS
+========================= */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 5px 9px;
+
+  border-radius: 7px;
+
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.2px;
+  text-transform: capitalize;
+}
+
+.status-badge.submitted {
+  background: #eeecfb;
+  color: #6256c9;
+}
+
+.status-badge.assigned {
+  background: #fff4df;
+  color: #b27622;
+}
+
+.status-badge.under_review {
+  background: #eaf4ff;
+  color: #397fc0;
+}
+
+.status-badge.decided {
+  background: #e8f6ef;
+  color: #38845e;
+}
+
+/* =========================
+   RESTORE BUTTON
+========================= */
+
+.restore-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 76px;
+  padding: 8px 13px;
+
+  border: 1px solid #ddd9ef;
+  border-radius: 8px;
+
+  background: #f7f5fd;
+  color: #6256c9;
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.restore-btn:hover {
+  background: #eeecfb;
+  border-color: #cbc6e5;
+
+  transform: translateY(-1px);
+}
+
+.restore-btn:active {
+  transform: translateY(0);
+}
+
+/* =========================
+   LOADING / EMPTY STATE
+========================= */
+
+.table-message {
+  height: 220px;
+
+  color: #9793a2 !important;
+
+  font-size: 13px !important;
+
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 800px) {
+  .applications-main {
+    padding: 25px 20px;
+  }
+
+  .applications-header h1 {
+    font-size: 26px;
+  }
+
+  .table-header {
+    padding: 18px;
+  }
+
+  .table-wrapper th,
+  .table-wrapper td {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

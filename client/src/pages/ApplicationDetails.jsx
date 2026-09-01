@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import api from "../services/api";
 import "./ApplicationDetails.css";
+import { CheckCircle, XCircle, AlertTriangle, Archive } from "lucide-react";
 
 function ApplicationDetails() {
   const { id } = useParams();
@@ -13,7 +14,7 @@ function ApplicationDetails() {
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [formData, setFormData] = useState({
     applicantOrganizationName: "",
     contactEmail: "",
@@ -27,7 +28,7 @@ function ApplicationDetails() {
   const [reviewers, setReviewers] = useState([]);
   const [assignments, setAssignments] = useState([]);
   const [history, setHistory] = useState([]);
-const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(true);
   const [reviewerId, setReviewerId] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [assignmentLoading, setAssignmentLoading] = useState(false);
@@ -35,6 +36,11 @@ const [historyLoading, setHistoryLoading] = useState(true);
   const [assignmentSuccess, setAssignmentSuccess] = useState("");
   const [completedReviews, setCompletedReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [notification, setNotification] = useState({
+    type: "",
+    message: "",
+  });
+  const [conflicts, setConflicts] = useState([]);
 
   const token = localStorage.getItem("token");
 
@@ -98,26 +104,26 @@ const [historyLoading, setHistoryLoading] = useState(true);
     }
   };
 
-const fetchApplicationHistory = async () => {
-  try {
-    setHistoryLoading(true);
+  const fetchApplicationHistory = async () => {
+    try {
+      setHistoryLoading(true);
 
-    const response = await api.get(`/history/application/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      const response = await api.get(`/history/application/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    setHistory(response.data || []);
-  } catch (error) {
-    console.error(
-      "Failed to fetch application history:",
-      error.response?.data || error.message
-    );
-  } finally {
-    setHistoryLoading(false);
-  }
-};
+      setHistory(response.data || []);
+    } catch (error) {
+      console.error(
+        "Failed to fetch application history:",
+        error.response?.data || error.message,
+      );
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
   // Fetch reviewers
   const fetchReviewers = async () => {
@@ -164,11 +170,35 @@ const fetchApplicationHistory = async () => {
     }
   };
 
+  const showNotification = (type, message) => {
+    setNotification({ type, message });
+
+    setTimeout(() => {
+      setNotification({ type: "", message: "" });
+    }, 3500);
+  };
+  const fetchConflicts = async () => {
+    try {
+      const response = await api.get(`/conflicts/application/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setConflicts(response.data.conflicts || []);
+    } catch (error) {
+      console.error(
+        "Failed to fetch conflicts:",
+        error.response?.data || error.message,
+      );
+    }
+  };
   useEffect(() => {
     fetchApplication();
     fetchReviewers();
     fetchAssignments();
     fetchCompletedReviews();
+    fetchConflicts();
     fetchApplicationHistory();
   }, [id]);
 
@@ -191,7 +221,8 @@ const fetchApplicationHistory = async () => {
 
       setApplication(response.data.application);
     } catch (error) {
-      alert(
+      showNotification(
+        "error",
         error.response?.data?.message || "Failed to update application status.",
       );
     } finally {
@@ -223,21 +254,20 @@ const fetchApplicationHistory = async () => {
       setApplication(response.data);
       setIsEditing(false);
 
-      alert("Application updated successfully.");
+      showNotification("success", "Application updated successfully.");
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to update application.");
+      showNotification(
+        "error",
+        error.response?.data?.message || "Failed to update application.",
+      );
     }
   };
 
   // Archive application
   const handleArchive = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to archive this application?",
-    );
-
-    if (!confirmed) return;
-
     try {
+      setStatusLoading(true);
+
       await api.patch(
         `/applications/${id}/archive`,
         {},
@@ -248,9 +278,22 @@ const fetchApplicationHistory = async () => {
         },
       );
 
-      navigate("/applications");
+      setShowArchiveModal(false);
+
+      showNotification("success", "Application archived successfully.");
+
+      setTimeout(() => {
+        navigate("/applications");
+      }, 1000);
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to archive application.");
+      setShowArchiveModal(false);
+
+      showNotification(
+        "error",
+        error.response?.data?.message || "Failed to archive application.",
+      );
+    } finally {
+      setStatusLoading(false);
     }
   };
 
@@ -259,7 +302,7 @@ const fetchApplicationHistory = async () => {
     e.preventDefault();
 
     if (!reviewerId || !dueDate) {
-      alert("Please select a reviewer and due date.");
+      showNotification("error", "Please select a reviewer and due date.");
       return;
     }
 
@@ -285,7 +328,10 @@ const fetchApplicationHistory = async () => {
       await fetchApplication();
       await fetchAssignments();
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to assign reviewer.");
+      showNotification(
+        "error",
+        error.response?.data?.message || "Failed to assign reviewer.",
+      );
     } finally {
       setAssignmentLoading(false);
     }
@@ -299,8 +345,44 @@ const fetchApplicationHistory = async () => {
     return <p>Application not found.</p>;
   }
 
+  const conflictedReviewerIds = conflicts.map((conflict) =>
+    conflict.reviewer?._id?.toString(),
+  );
+
+  const eligibleReviewers = reviewers.filter(
+    (reviewer) => !conflictedReviewerIds.includes(reviewer._id.toString()),
+  );
+
   return (
     <div className="dashboard-layout">
+      {notification.message && (
+        <div className={`notification-toast ${notification.type}`}>
+          <div className="notification-icon">
+            {notification.type === "success" && <CheckCircle size={20} />}
+            {notification.type === "error" && <XCircle size={20} />}
+            {notification.type === "warning" && <AlertTriangle size={20} />}
+          </div>
+
+          <div className="notification-content">
+            <strong>
+              {notification.type === "success"
+                ? "Success"
+                : notification.type === "error"
+                  ? "Something went wrong"
+                  : "Attention"}
+            </strong>
+
+            <span>{notification.message}</span>
+          </div>
+
+          <button
+            className="notification-close"
+            onClick={() => setNotification({ type: "", message: "" })}
+          >
+            ×
+          </button>
+        </div>
+      )}
       <Sidebar user={user} onLogout={handleLogout} />
 
       <main className="application-details-main">
@@ -347,7 +429,10 @@ const fetchApplicationHistory = async () => {
             </div>
 
             {user?.role === "PROGRAM_OFFICER" && (
-              <button className="archive-text-btn" onClick={handleArchive}>
+              <button
+                className="archive-text-btn"
+                onClick={() => setShowArchiveModal(true)}
+              >
                 Archive
               </button>
             )}
@@ -414,8 +499,8 @@ const fetchApplicationHistory = async () => {
         {/* Reviewer Assignment */}
 
         {user?.role === "PROGRAM_OFFICER" &&
-          application.status === "SUBMITTED" &&
-          assignments.length === 0 && (
+          assignments.length === 0 &&
+          completedReviews.length < 3 && (
             <section className="details-card review-management-card">
               <div className="review-card-header">
                 <div>
@@ -438,7 +523,7 @@ const fetchApplicationHistory = async () => {
                     >
                       <option value="">Select a reviewer</option>
 
-                      {reviewers.map((reviewer) => (
+                      {eligibleReviewers.map((reviewer) => (
                         <option key={reviewer._id} value={reviewer._id}>
                           {reviewer.name} — {reviewer.email}
                         </option>
@@ -579,69 +664,104 @@ const fetchApplicationHistory = async () => {
           </>
         )}
 
-{/* Application History */}
-{user?.role === "PROGRAM_OFFICER" && (
-  <section className="details-card application-history-card">
-    <div className="review-card-header">
-      <div>
-        <p className="section-label">AUDIT TRAIL</p>
-        <h2>Application History</h2>
-      </div>
-    </div>
-
-    {historyLoading ? (
-      <p className="history-empty">Loading history...</p>
-    ) : history.length === 0 ? (
-      <p className="history-empty">No history available.</p>
-    ) : (
-      <div className="history-list">
-        {history.map((item) => (
-          <div className="history-item" key={item._id}>
-            <div className="history-icon">
-              ✓
+        {/* Application History */}
+        {user?.role === "PROGRAM_OFFICER" && (
+          <section className="details-card application-history-card">
+            <div className="review-card-header">
+              <div>
+                <p className="section-label">AUDIT TRAIL</p>
+                <h2>Application History</h2>
+              </div>
             </div>
 
-            <div className="history-content">
-              <strong>
-                {item.action
-                  ?.replaceAll("_", " ")
-                  .toLowerCase()
-                  .replace(/\b\w/g, (char) => char.toUpperCase())}
-              </strong>
+            {historyLoading ? (
+              <p className="history-empty">Loading history...</p>
+            ) : history.length === 0 ? (
+              <p className="history-empty">No history available.</p>
+            ) : (
+              <div className="history-list">
+                {history.map((item) => (
+                  <div className="history-item" key={item._id}>
+                    <div className="history-icon">✓</div>
 
-              <p>
-                {item.performedBy?.name || "System"}
-                {item.reviewer?.name &&
-                  item.action === "REVIEWER_ASSIGNED" &&
-                  ` assigned ${item.reviewer.name}`}
-              </p>
+                    <div className="history-content">
+                      <strong>
+                        {item.action
+                          ?.replaceAll("_", " ")
+                          .toLowerCase()
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}
+                      </strong>
 
-              {item.comment && (
-                <span className="history-comment">
-                  {item.comment}
-                </span>
-              )}
-            </div>
+                      <p>
+                        {item.performedBy?.name || "System"}
+                        {item.reviewer?.name &&
+                          item.action === "REVIEWER_ASSIGNED" &&
+                          ` assigned ${item.reviewer.name}`}
+                      </p>
 
-            <div className="history-time">
-              {item.createdAt
-                ? new Date(item.createdAt).toLocaleString("en-IN", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "Date unavailable"}
+                      {item.comment && (
+                        <span className="history-comment">{item.comment}</span>
+                      )}
+                    </div>
+
+                    <div className="history-time">
+                      {item.createdAt
+                        ? new Date(item.createdAt).toLocaleString("en-IN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "Date unavailable"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Archive Confirmation Modal */}
+        {showArchiveModal && (
+          <div className="modal-overlay">
+            <div className="archive-confirm-modal">
+              <div className="archive-modal-icon">
+                <Archive size={24} />
+              </div>
+
+              <div className="archive-modal-content">
+                <h2>Archive Application?</h2>
+
+                <p>
+                  Are you sure you want to archive{" "}
+                  <strong>{application.applicantOrganizationName}</strong>? You
+                  can restore this application later from the Archived section.
+                </p>
+              </div>
+
+              <div className="archive-modal-actions">
+                <button
+                  type="button"
+                  className="archive-cancel-btn"
+                  onClick={() => setShowArchiveModal(false)}
+                  disabled={statusLoading}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  className="archive-confirm-btn"
+                  onClick={handleArchive}
+                  disabled={statusLoading}
+                >
+                  {statusLoading ? "Archiving..." : "Yes, Archive"}
+                </button>
+              </div>
             </div>
           </div>
-        ))}
-      </div>
-    )}
-  </section>
-)}
-
-{/* Edit Modal */}
+        )}
 
         {/* Edit Modal */}
         {isEditing && (

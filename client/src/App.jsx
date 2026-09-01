@@ -7,6 +7,8 @@ import ArchivedApplications from "./pages/ArchivedApplications";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ReviewApplication from "./pages/ReviewApplication";
 import MyReviews from "./pages/MyReviews";
+import Alerts from "./pages/Alerts";
+import Conflicts from "./pages/Conflicts";
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
           <Route path="/archived" element={<ArchivedApplications />} />
           <Route path="/reviews" element={<MyReviews/>} />
           <Route path="/reviews/:id" element={<ReviewApplication />} />
+          <Route path="/alerts" element={<Alerts />} />
+          <Route path="/conflicts" element={<Conflicts />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

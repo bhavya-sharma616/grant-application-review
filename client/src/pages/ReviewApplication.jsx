@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import api from "../services/api";
 import "./ReviewApplication.css";
+import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 
 function ReviewApplication() {
   const { id } = useParams();
@@ -15,13 +16,19 @@ function ReviewApplication() {
   const [review, setReview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
+  const [notification, setNotification] = useState({
+    type: "",
+    message: "",
+  });
   const [formData, setFormData] = useState({
     impactScore: "",
     feasibilityScore: "",
     budgetJustificationScore: "",
     comments: "",
   });
+  const [conflictReason, setConflictReason] = useState("");
+  const [conflictDeclared, setConflictDeclared] = useState(false);
+  const [declaringConflict, setDeclaringConflict] = useState(false);
 
   const fetchApplication = async () => {
     try {
@@ -57,8 +64,7 @@ function ReviewApplication() {
 
       const myReview = reviews.find(
         (item) =>
-          item.reviewer?._id === user?._id ||
-          item.reviewer === user?._id,
+          item.reviewer?._id === user?._id || item.reviewer === user?._id,
       );
 
       if (myReview) {
@@ -67,8 +73,7 @@ function ReviewApplication() {
         setFormData({
           impactScore: myReview.impactScore || "",
           feasibilityScore: myReview.feasibilityScore || "",
-          budgetJustificationScore:
-            myReview.budgetJustificationScore || "",
+          budgetJustificationScore: myReview.budgetJustificationScore || "",
           comments: myReview.comments || "",
         });
       }
@@ -79,13 +84,16 @@ function ReviewApplication() {
       );
     }
   };
+  const showNotification = (type, message) => {
+    setNotification({ type, message });
 
+    setTimeout(() => {
+      setNotification({ type: "", message: "" });
+    }, 3500);
+  };
   useEffect(() => {
     const loadData = async () => {
-      await Promise.all([
-        fetchApplication(),
-        fetchExistingReview(),
-      ]);
+      await Promise.all([fetchApplication(), fetchExistingReview()]);
 
       setLoading(false);
     };
@@ -108,16 +116,54 @@ function ReviewApplication() {
       !formData.feasibilityScore ||
       !formData.budgetJustificationScore
     ) {
-      alert("Please provide all scores.");
+      showNotification("warning", "Please provide all scores.");
       return false;
     }
 
     if (!formData.comments.trim()) {
-      alert("Please provide comments.");
+      showNotification("warning", "Please provide comments.");
       return false;
     }
 
     return true;
+  };
+
+  const handleDeclareConflict = async () => {
+    if (!conflictReason.trim()) {
+      showNotification("warning", "Please provide a reason for the conflict.");
+      return;
+    }
+
+    try {
+      setDeclaringConflict(true);
+
+      const response = await api.post(
+        `/conflicts/${id}`,
+        {
+          reason: conflictReason,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      setConflictDeclared(true);
+      setConflictReason("");
+
+      showNotification(
+        "success",
+        response.data.message || "Conflict declared successfully.",
+      );
+    } catch (error) {
+      showNotification(
+        "error",
+        error.response?.data?.message || "Failed to declare conflict.",
+      );
+    } finally {
+      setDeclaringConflict(false);
+    }
   };
 
   const handleSaveDraft = async () => {
@@ -127,34 +173,26 @@ function ReviewApplication() {
       let response;
 
       if (review?._id) {
-        response = await api.patch(
-          `/reviews/${review._id}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        response = await api.patch(`/reviews/${review._id}`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
       } else {
-        response = await api.post(
-          `/reviews/application/${id}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        response = await api.post(`/reviews/application/${id}`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
       }
 
       setReview(response.data.review);
 
-      alert("Review draft saved successfully.");
+      showNotification("success", "Review draft saved successfully.");
     } catch (error) {
-      alert(
-        error.response?.data?.message ||
-          "Failed to save review draft.",
+      showNotification(
+        "error",
+        error.response?.data?.message || "Failed to save review draft.",
       );
     } finally {
       setSaving(false);
@@ -184,15 +222,11 @@ function ReviewApplication() {
         reviewId = response.data.review._id;
         setReview(response.data.review);
       } else {
-        await api.patch(
-          `/reviews/${reviewId}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        await api.patch(`/reviews/${reviewId}`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
       }
 
       // Complete review
@@ -208,13 +242,15 @@ function ReviewApplication() {
 
       setReview(response.data.review);
 
-      alert("Review submitted successfully.");
+      showNotification("success", "Review submitted successfully.");
 
-      navigate("/reviews");
+      setTimeout(() => {
+        navigate("/reviews");
+      }, 1000);
     } catch (error) {
-      alert(
-        error.response?.data?.message ||
-          "Failed to submit review.",
+      showNotification(
+        "error",
+        error.response?.data?.message || "Failed to submit review.",
       );
     } finally {
       setSaving(false);
@@ -233,21 +269,50 @@ function ReviewApplication() {
     return <p>You are not authorized to review applications.</p>;
   }
 
-  const isCompleted = review?.status === "COMPLETED";
+  const isCompleted =
+  review?.status === "COMPLETED" || conflictDeclared;
 
   return (
     <div className="dashboard-layout">
-      <Sidebar user={user} onLogout={() => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        navigate("/login");
-      }} />
+      {notification.message && (
+        <div className={`notification-toast ${notification.type}`}>
+          <div className="notification-icon">
+            {notification.type === "success" && <CheckCircle size={20} />}
+            {notification.type === "error" && <XCircle size={20} />}
+            {notification.type === "warning" && <AlertTriangle size={20} />}
+          </div>
+
+          <div className="notification-content">
+            <strong>
+              {notification.type === "success"
+                ? "Success"
+                : notification.type === "error"
+                  ? "Something went wrong"
+                  : "Attention"}
+            </strong>
+
+            <span>{notification.message}</span>
+          </div>
+
+          <button
+            className="notification-close"
+            onClick={() => setNotification({ type: "", message: "" })}
+          >
+            ×
+          </button>
+        </div>
+      )}
+      <Sidebar
+        user={user}
+        onLogout={() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate("/login");
+        }}
+      />
 
       <main className="review-application-main">
-        <button
-          className="back-button"
-          onClick={() => navigate("/reviews")}
-        >
+        <button className="back-button" onClick={() => navigate("/reviews")}>
           ← Back to My Reviews
         </button>
 
@@ -260,9 +325,7 @@ function ReviewApplication() {
             <p>{application.contactEmail}</p>
           </div>
 
-          <span
-            className={`status-badge ${application.status.toLowerCase()}`}
-          >
+          <span className={`status-badge ${application.status.toLowerCase()}`}>
             {application.status.replace("_", " ")}
           </span>
         </div>
@@ -292,19 +355,73 @@ function ReviewApplication() {
             <div>
               <span>Submission Date</span>
               <strong>
-                {new Date(
-                  application.submissionDate,
-                ).toLocaleDateString("en-IN")}
+                {new Date(application.submissionDate).toLocaleDateString(
+                  "en-IN",
+                )}
               </strong>
             </div>
 
             <div>
               <span>Status</span>
-              <strong>
-                {application.status.replace("_", " ")}
-              </strong>
+              <strong>{application.status.replace("_", " ")}</strong>
             </div>
           </div>
+        </section>
+
+        <section className="details-card conflict-card">
+          <div className="conflict-header">
+            <div>
+              <p className="section-label">CONFLICT OF INTEREST</p>
+              <h2>Declare a Conflict</h2>
+              <p>
+                If you have a personal, professional, or financial conflict with
+                this application, declare it before submitting your review.
+              </p>
+            </div>
+
+            <div className="conflict-icon">
+              <AlertTriangle size={22} />
+            </div>
+          </div>
+
+          {conflictDeclared ? (
+            <div className="conflict-declared">
+              <CheckCircle size={20} />
+
+              <div>
+                <strong>Conflict declared</strong>
+                <span>
+                  You have declared a conflict for this application.
+        You can no longer submit a review for it.
+                </span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="conflict-field">
+                <label htmlFor="conflictReason">Reason</label>
+
+                <textarea
+                  id="conflictReason"
+                  value={conflictReason}
+                  onChange={(e) => setConflictReason(e.target.value)}
+                  placeholder="Explain why you have a conflict of interest..."
+                  rows="4"
+                />
+              </div>
+
+              <div className="conflict-actions">
+                <button
+                  type="button"
+                  className="declare-conflict-btn"
+                  onClick={handleDeclareConflict}
+                  disabled={declaringConflict}
+                >
+                  {declaringConflict ? "Declaring..." : "Declare Conflict"}
+                </button>
+              </div>
+            </>
+          )}
         </section>
 
         {/* Review Form */}

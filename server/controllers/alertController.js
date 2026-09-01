@@ -3,6 +3,12 @@ const Assignment = require("../models/Assignment");
 
 const getAlerts = async (req, res) => {
   try {
+    if (req.user.role !== "PROGRAM_OFFICER") {
+      return res.status(403).json({
+        message: "Only Program Officers can access alerts",
+      });
+    }
+
     const now = new Date();
 
     const overdueAssignments = await Assignment.find({
@@ -60,9 +66,7 @@ const getAlerts = async (req, res) => {
 
 const dismissAlert = async (req, res) => {
   try {
-    const alert = await Alert.findById(req.params.id).populate(
-      "assignment"
-    );
+    const alert = await Alert.findById(req.params.id).populate("assignment");
 
     if (!alert) {
       return res.status(404).json({

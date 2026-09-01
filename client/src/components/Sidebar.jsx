@@ -21,6 +21,7 @@ function Sidebar({ user, onLogout }) {
       label: "Applications",
       icon: FileText,
       path: "/applications",
+      roles: ["PROGRAM_OFFICER"],
     },
     {
       label: "My Reviews",
@@ -37,11 +38,13 @@ function Sidebar({ user, onLogout }) {
       label: "Conflicts",
       icon: ShieldAlert,
       path: "/conflicts",
+      roles: ["REVIEWER"],
     },
     {
       label: "Archived",
       icon: Archive,
       path: "/archived",
+      roles: ["PROGRAM_OFFICER"],
     },
   ];
 
@@ -79,8 +82,8 @@ function Sidebar({ user, onLogout }) {
                   <span>{item.label}</span>
 
                   {item.label === "Alerts" && (
-                    <span className="alert-badge">0</span>
-                  )}
+                    <span className="alert-badge">!</span>
+)}
                 </NavLink>
               );
             })}

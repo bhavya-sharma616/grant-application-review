@@ -163,7 +163,19 @@ const getApplicationById = async (req, res) => {
         message: "Application not found",
       });
     }
+    if (req.user.role === "REVIEWER") {
+      const assignment = await Assignment.findOne({
+        application: application._id,
+        reviewer: req.user._id,
+        isActive: true,
+      });
 
+      if (!assignment) {
+        return res.status(403).json({
+          message: "You are not assigned to this application",
+        });
+      }
+    }
     return res.json(application);
   } catch (error) {
     return res.status(500).json({

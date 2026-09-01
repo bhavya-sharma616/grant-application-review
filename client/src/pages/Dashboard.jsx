@@ -5,6 +5,7 @@ import {
   CircleCheck,
   IndianRupee,
   BarChart3,
+  CalendarDays,
 } from "lucide-react";
 import "./Dashboard.css";
 import { useEffect, useState } from "react";
@@ -48,25 +49,27 @@ function Dashboard() {
   const stats = [
     {
       title: "Open Applications",
-      value: "12",
+      value: dashboard.openApplications ?? 0,
       description: "Currently active applications",
       icon: FileText,
     },
     {
       title: "Overdue Reviews",
-      value: "3",
+      value: dashboard.overdueReviews ?? 0,
       description: "Reviews past their due date",
       icon: Clock3,
     },
     {
       title: "Ready for Decision",
-      value: "2",
+      value: dashboard.readyForDecision ?? 0,
       description: "Applications with 3+ reviews",
       icon: CircleCheck,
     },
     {
       title: "Amount Requested",
-      value: "₹8.4L",
+      value: dashboard?.amountRequested
+        ? `₹${Number(dashboard.amountRequested).toLocaleString("en-IN")}`
+        : "₹0",
       description: "Submitted this month",
       icon: IndianRupee,
     },
@@ -82,17 +85,20 @@ function Dashboard() {
             <p className="dashboard-eyebrow">OVERVIEW</p>
             <h1>Welcome back, {user?.name?.split(" ")[0]} 👋</h1>
             <p className="dashboard-subtitle">
-              Here's what's happening with your grant applications.
+              Here's what's happening across your grant applications.
             </p>
           </div>
 
           <div className="header-date">
-            {new Date().toLocaleDateString("en-IN", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-          </div>
+  <CalendarDays size={16} />
+  <span>
+    {new Date().toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })}
+  </span>
+</div>
         </header>
 
         <section className="stats-grid">
@@ -205,45 +211,32 @@ function Dashboard() {
 
             <div className="chart-placeholder">
               <div className="bar-chart">
-                <div className="chart-bar-group">
-                  <div className="chart-bar" style={{ height: "25%" }}></div>
-                  <span>W1</span>
-                </div>
+                {(() => {
+  const weeks = dashboard.decidedPerWeek || [];
 
-                <div className="chart-bar-group">
-                  <div className="chart-bar" style={{ height: "45%" }}></div>
-                  <span>W2</span>
-                </div>
+  const maxCount = Math.max(
+    ...weeks.map((item) => item.count),
+    1
+  );
 
-                <div className="chart-bar-group">
-                  <div className="chart-bar" style={{ height: "30%" }}></div>
-                  <span>W3</span>
-                </div>
+  return Array.from({ length: 8 }, (_, index) => {
+    const week = weeks[index];
+    const percentage = week
+      ? (week.count / maxCount) * 100
+      : 0;
 
-                <div className="chart-bar-group">
-                  <div className="chart-bar" style={{ height: "70%" }}></div>
-                  <span>W4</span>
-                </div>
+    return (
+      <div className="chart-bar-group" key={index}>
+        <div
+          className="chart-bar"
+          style={{ height: `${Math.max(percentage, 3)}%` }}
+        ></div>
 
-                <div className="chart-bar-group">
-                  <div className="chart-bar" style={{ height: "55%" }}></div>
-                  <span>W5</span>
-                </div>
-
-                <div className="chart-bar-group">
-                  <div className="chart-bar" style={{ height: "85%" }}></div>
-                  <span>W6</span>
-                </div>
-
-                <div className="chart-bar-group">
-                  <div className="chart-bar" style={{ height: "40%" }}></div>
-                  <span>W7</span>
-                </div>
-
-                <div className="chart-bar-group">
-                  <div className="chart-bar" style={{ height: "65%" }}></div>
-                  <span>W8</span>
-                </div>
+        <span>W{index + 1}</span>
+      </div>
+    );
+  });
+})()}
               </div>
             </div>
           </div>

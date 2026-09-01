@@ -860,3 +860,252 @@
     margin-top: -6px;
   }
 }
+
+/* ================================
+   Notification Toast
+================================ */
+
+.notification-toast {
+  position: fixed;
+  top: 24px;
+  right: 28px;
+  z-index: 9999;
+
+  min-width: 340px;
+  max-width: 430px;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 16px 18px;
+
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.12),
+    0 4px 10px rgba(15, 23, 42, 0.06);
+
+  animation: notificationSlideIn 0.3s ease;
+}
+
+.notification-icon {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.notification-toast.success .notification-icon {
+  background: #ecfdf3;
+  color: #16a34a;
+}
+
+.notification-toast.error .notification-icon {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.notification-toast.warning .notification-icon {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.notification-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  flex: 1;
+}
+
+.notification-content strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.notification-content span {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #6b7280;
+}
+
+.notification-close {
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  background: transparent;
+
+  color: #9ca3af;
+  font-size: 20px;
+
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.notification-close:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+@keyframes notificationSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 600px) {
+  .notification-toast {
+    left: 16px;
+    right: 16px;
+    top: 16px;
+
+    min-width: 0;
+    max-width: none;
+  }
+}
+/* =================================
+   Archive Confirmation Modal
+================================= */
+
+.archive-confirm-modal {
+  width: 100%;
+  max-width: 460px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.18),
+    0 8px 20px rgba(15, 23, 42, 0.08);
+
+  animation: archiveModalIn 0.2s ease-out;
+}
+
+.archive-modal-icon {
+  width: 52px;
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+  background: #fff7ed;
+  color: #ea580c;
+
+  margin-bottom: 18px;
+}
+
+.archive-modal-content h2 {
+  margin: 0 0 8px;
+
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.archive-modal-content p {
+  margin: 0;
+
+  font-size: 14px;
+  line-height: 1.6;
+  color: #6b7280;
+}
+
+.archive-modal-content strong {
+  color: #374151;
+  font-weight: 600;
+}
+
+.archive-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin-top: 26px;
+}
+
+.archive-cancel-btn,
+.archive-confirm-btn {
+  border: none;
+  border-radius: 9px;
+
+  padding: 10px 17px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.archive-cancel-btn {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.archive-cancel-btn:hover {
+  background: #e5e7eb;
+}
+
+.archive-confirm-btn {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.archive-confirm-btn:hover {
+  background: #b91c1c;
+}
+
+.archive-cancel-btn:disabled,
+.archive-confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes archiveModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 600px) {
+  .archive-confirm-modal {
+    margin: 16px;
+    padding: 22px;
+  }
+
+  .archive-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .archive-cancel-btn,
+  .archive-confirm-btn {
+    width: 100%;
+  }
+}

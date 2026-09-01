@@ -2,6 +2,7 @@ const Review = require("../models/Review");
 const Assignment = require("../models/Assignment");
 const GrantApplication = require("../models/GrantApplication");
 const ApplicationHistory = require("../models/ApplicationHistory");
+const Conflict = require("../models/Conflict");
 
 // Create or save a draft review
 const createReview = async (req, res) => {
@@ -34,6 +35,17 @@ const createReview = async (req, res) => {
     if (!assignment) {
       return res.status(403).json({
         message: "You are not assigned to review this application",
+      });
+    }
+
+    const conflict = await Conflict.findOne({
+      application: applicationId,
+      reviewer: req.user._id,
+    });
+
+    if (conflict) {
+      return res.status(400).json({
+        message: "You cannot review an application after declaring a conflict",
       });
     }
 
@@ -89,6 +101,17 @@ const updateReview = async (req, res) => {
       });
     }
 
+    const conflict = await Conflict.findOne({
+      application: review.application,
+      reviewer: req.user._id,
+    });
+
+    if (conflict) {
+      return res.status(400).json({
+        message: "You cannot edit a review after declaring a conflict",
+      });
+    }
+
     // Completed reviews are locked
     if (review.status === "COMPLETED") {
       return res.status(400).json({
@@ -140,6 +163,17 @@ const completeReview = async (req, res) => {
       });
     }
 
+    const conflict = await Conflict.findOne({
+      application: review.application,
+      reviewer: req.user._id,
+    });
+
+    if (conflict) {
+      return res.status(400).json({
+        message: "You cannot complete a review after declaring a conflict",
+      });
+    }
+
     if (review.status === "COMPLETED") {
       return res.status(400).json({
         message: "Review is already completed",
@@ -161,13 +195,6 @@ const completeReview = async (req, res) => {
 
     review.status = "COMPLETED";
     await review.save();
-
-    const application = await GrantApplication.findById(review.application);
-
-    if (application) {
-      application.status = "DECIDED";
-      await application.save();
-    }
 
     await ApplicationHistory.create({
       application: review.application,
