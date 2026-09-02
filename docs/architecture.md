@@ -12,7 +12,7 @@ The frontend is responsible for the user interface. It contains pages for login,
 
 The backend exposes REST API endpoints and contains the application's main business logic. Express routes receive incoming requests, middleware handles authentication and role-based authorization, controllers process requests and apply business rules, and Mongoose models communicate with MongoDB.
 
-MongoDB stores the application's persistent data, including users, grant applications, reviewer assignments, reviews, and conflicts of interest.
+MongoDB stores the application's persistent data, including users, grant applications, reviewer assignments, reviews, conflicts of interest, application history, and overdue alerts.
 
 The frontend does not directly communicate with the database. All requests go through the backend API.
 
@@ -202,6 +202,10 @@ The implemented workflow now includes:
 * CSV export of completed reviews
 * Application status lifecycle validation
 * Requiring at least three completed reviews before an application can be marked as `DECIDED`
+* Server-side application search, filtering, sorting, and pagination
+* Program Officer dashboard metrics and application status/funding-round summaries
+* Overdue review alerts with dismissal and alert reappearance when a revised due date becomes overdue
+* Application ownership and Program Officer filtering
 
 Optional stretch features were intentionally left out to keep the scope focused on the required workflow. These include:
 

@@ -32,10 +32,8 @@ function ApplicationDetails() {
   const [reviewerId, setReviewerId] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [assignmentLoading, setAssignmentLoading] = useState(false);
-  const [reviewerLoading, setReviewerLoading] = useState(false);
   const [assignmentSuccess, setAssignmentSuccess] = useState("");
   const [completedReviews, setCompletedReviews] = useState([]);
-  const [reviewsLoading, setReviewsLoading] = useState(false);
   const [notification, setNotification] = useState({
     type: "",
     message: "",
@@ -209,9 +207,7 @@ function ApplicationDetails() {
 
       const response = await api.patch(
         `/applications/${id}/status`,
-        {
-          status: newStatus,
-        },
+        { status: newStatus },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -220,6 +216,13 @@ function ApplicationDetails() {
       );
 
       setApplication(response.data.application);
+
+      showNotification(
+        "success",
+        `Application moved to ${newStatus.replace("_", " ").toLowerCase()}.`,
+      );
+
+      await fetchApplicationHistory();
     } catch (error) {
       showNotification(
         "error",
@@ -349,8 +352,14 @@ function ApplicationDetails() {
     conflict.reviewer?._id?.toString(),
   );
 
+  const assignedReviewerIds = assignments.map((assignment) =>
+    assignment.reviewer?._id?.toString(),
+  );
+
   const eligibleReviewers = reviewers.filter(
-    (reviewer) => !conflictedReviewerIds.includes(reviewer._id.toString()),
+    (reviewer) =>
+      !conflictedReviewerIds.includes(reviewer._id.toString()) &&
+      !assignedReviewerIds.includes(reviewer._id.toString()),
   );
 
   return (
@@ -409,6 +418,41 @@ function ApplicationDetails() {
             >
               {application.status.replace("_", " ")}
             </span>
+
+            {user?.role === "PROGRAM_OFFICER" && (
+              <>
+                {application.status === "SUBMITTED" && (
+                  <button
+                    className="status-action-btn"
+                    onClick={() => handleStatusChange("ASSIGNED")}
+                    disabled={statusLoading}
+                  >
+                    {statusLoading ? "Updating..." : "Mark as Assigned"}
+                  </button>
+                )}
+
+                {application.status === "ASSIGNED" && (
+                  <button
+                    className="status-action-btn"
+                    onClick={() => handleStatusChange("UNDER_REVIEW")}
+                    disabled={statusLoading}
+                  >
+                    {statusLoading ? "Updating..." : "Start Review"}
+                  </button>
+                )}
+
+                {application.status === "UNDER_REVIEW" &&
+                  completedReviews.length >= 3 && (
+                    <button
+                      className="status-action-btn"
+                      onClick={() => handleStatusChange("DECIDED")}
+                      disabled={statusLoading}
+                    >
+                      {statusLoading ? "Updating..." : "Mark as Decided"}
+                    </button>
+                  )}
+              </>
+            )}
           </div>
         </div>
 
@@ -498,63 +542,61 @@ function ApplicationDetails() {
 
         {/* Reviewer Assignment */}
 
-        {user?.role === "PROGRAM_OFFICER" &&
-          assignments.length === 0 &&
-          completedReviews.length < 3 && (
-            <section className="details-card review-management-card">
-              <div className="review-card-header">
-                <div>
-                  <p className="section-label">REVIEW MANAGEMENT</p>
-                  <h2>Assign Reviewer</h2>
+        {user?.role === "PROGRAM_OFFICER" && (
+          <section className="details-card review-management-card">
+            <div className="review-card-header">
+              <div>
+                <p className="section-label">REVIEW MANAGEMENT</p>
+                <h2>Assign Reviewer</h2>
+              </div>
+            </div>
+            {assignmentSuccess && (
+              <div className="assignment-success">✓ {assignmentSuccess}</div>
+            )}
+            <form className="review-form" onSubmit={handleAssignReviewer}>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Reviewer</label>
+
+                  <select
+                    value={reviewerId}
+                    onChange={(e) => setReviewerId(e.target.value)}
+                    required
+                  >
+                    <option value="">Select a reviewer</option>
+
+                    {eligibleReviewers.map((reviewer) => (
+                      <option key={reviewer._id} value={reviewer._id}>
+                        {reviewer.name} — {reviewer.email}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Review Due Date</label>
+
+                  <input
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    required
+                  />
                 </div>
               </div>
-              {assignmentSuccess && (
-                <div className="assignment-success">✓ {assignmentSuccess}</div>
-              )}
-              <form className="review-form" onSubmit={handleAssignReviewer}>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Reviewer</label>
 
-                    <select
-                      value={reviewerId}
-                      onChange={(e) => setReviewerId(e.target.value)}
-                      required
-                    >
-                      <option value="">Select a reviewer</option>
-
-                      {eligibleReviewers.map((reviewer) => (
-                        <option key={reviewer._id} value={reviewer._id}>
-                          {reviewer.name} — {reviewer.email}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Review Due Date</label>
-
-                    <input
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="assign-button-wrapper">
-                  <button
-                    type="submit"
-                    className="assign-reviewer-btn"
-                    disabled={assignmentLoading}
-                  >
-                    {assignmentLoading ? "Assigning..." : "Assign Reviewer"}
-                  </button>
-                </div>
-              </form>
-            </section>
-          )}
+              <div className="assign-button-wrapper">
+                <button
+                  type="submit"
+                  className="assign-reviewer-btn"
+                  disabled={assignmentLoading}
+                >
+                  {assignmentLoading ? "Assigning..." : "Assign Reviewer"}
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
 
         {/* Reviewers & Completed Reviews - Program Officer only */}
 
@@ -686,10 +728,12 @@ function ApplicationDetails() {
 
                     <div className="history-content">
                       <strong>
-                        {item.action
-                          ?.replaceAll("_", " ")
-                          .toLowerCase()
-                          .replace(/\b\w/g, (char) => char.toUpperCase())}
+                        {item.action === "STATUS_CHANGED"
+                          ? `${item.oldStatus?.replace("_", " ")} → ${item.newStatus?.replace("_", " ")}`
+                          : item.action
+                              ?.replaceAll("_", " ")
+                              .toLowerCase()
+                              .replace(/\b\w/g, (char) => char.toUpperCase())}
                       </strong>
 
                       <p>

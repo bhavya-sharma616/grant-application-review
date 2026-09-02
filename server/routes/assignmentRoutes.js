@@ -8,6 +8,7 @@ const {
   bulkAssignReviewers,
   getReviewers,
   getApplicationAssignments,
+  declineAssignment
 } = require("../controllers/assignmentController");
 
 const protect = require("../middleware/authMiddleware");
@@ -52,6 +53,14 @@ router.patch(
   protect,
   allowRoles("PROGRAM_OFFICER"),
   updateAssignmentDueDate
+);
+
+// Reviewer declines their assignment
+router.post(
+  "/:id/decline",
+  protect,
+  allowRoles("REVIEWER"),
+  declineAssignment
 );
 
 // Program Officer removes assignment

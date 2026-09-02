@@ -101,4 +101,25 @@ const getConflicts = async (req, res) => {
   }
 };
 
-module.exports = { declareConflict, getConflicts };
+const getApplicationConflicts = async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+
+    const conflicts = await Conflict.find({
+      application: applicationId,
+    })
+      .populate("reviewer", "name email")
+      .sort({ createdAt: -1 });
+
+    return res.json({
+      conflicts,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to fetch application conflicts",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { declareConflict, getConflicts, getApplicationConflicts};

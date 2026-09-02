@@ -30,15 +30,9 @@ function Applications() {
     submissionDate: "",
   });
 
-  const [assignments, setAssignments] = useState([]);
-  const [reviewers, setReviewers] = useState([]);
-  const [showAssignModal, setShowAssignModal] = useState(false);
-  const [assignmentLoading, setAssignmentLoading] = useState(false);
-
-  const [assignmentForm, setAssignmentForm] = useState({
-    reviewerId: "",
-    dueDate: "",
-  });
+  const [owner, setOwner] = useState("");
+  const [programOfficers, setProgramOfficers] = useState([]);
+  const [overdue, setOverdue] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -57,6 +51,8 @@ function Applications() {
           search,
           fundingRound,
           status,
+          owner,
+          overdue: overdue ? "true" : "false",
           sortBy,
           order,
           page,
@@ -79,6 +75,29 @@ function Applications() {
       setLoading(false);
     }
   };
+
+  const fetchProgramOfficers = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await api.get("/users/program-officers", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setProgramOfficers(
+      Array.isArray(response.data) ? response.data : []
+    );
+  } catch (error) {
+    console.error(
+      "Failed to fetch program officers:",
+      error.response?.data || error.message,
+    );
+
+    setProgramOfficers([]);
+  }
+};
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -122,32 +141,17 @@ function Applications() {
 
   const handleSearch = () => {
     setPage(1);
-    fetchApplications();
   };
 
-  useEffect(() => {
-    fetchApplications();
-  }, [fundingRound, status, sortBy, order, page]);
+useEffect(() => {
+  fetchApplications();
+}, [fundingRound, status, owner, overdue, sortBy, order, page]);
 
-  const fetchAssignments = async () => {
-  try {
-    const token = localStorage.getItem("token");
-
-    const response = await api.get("/assignments/application/" + id, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    setAssignments(response.data);
-  } catch (error) {
-    console.error(
-      "Failed to fetch assignments:",
-      error.response?.data || error.message,
-    );
+useEffect(() => {
+  if (user?.role === "PROGRAM_OFFICER") {
+    fetchProgramOfficers();
   }
-};
-
+}, []);
   return (
     <div className="dashboard-layout">
       <Sidebar user={user} onLogout={handleLogout} />
@@ -161,12 +165,21 @@ function Applications() {
           </div>
 
           {user?.role === "PROGRAM_OFFICER" && (
-            <button
-              className="create-application-btn"
-              onClick={() => setShowCreateModal(true)}
-            >
-              + New Application
-            </button>
+            <div className="header-actions">
+              <button
+                className="bulk-assignment-btn"
+                onClick={() => navigate("/bulk-assignment")}
+              >
+                Bulk Assign Reviewers
+              </button>
+
+              <button
+                className="create-application-btn"
+                onClick={() => setShowCreateModal(true)}
+              >
+                + New Application
+              </button>
+            </div>
           )}
         </div>
 
@@ -213,6 +226,34 @@ function Applications() {
               <option value="UNDER_REVIEW">Under Review</option>
               <option value="DECIDED">Decided</option>
             </select>
+
+            {user?.role === "PROGRAM_OFFICER" && (
+              <select
+                value={owner}
+                onChange={(e) => {
+                  setOwner(e.target.value);
+                  setPage(1);
+                }}
+              >
+                <option value="">All Program Officers</option>
+
+                {programOfficers.map((officer) => (
+                  <option key={officer._id} value={officer._id}>
+                    {officer.name}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <label className="overdue-filter">
+              <input
+                type="checkbox"
+                checked={overdue}
+                onChange={(e) => setOverdue(e.target.checked)}
+              />
+
+              <span>Overdue Reviews</span>
+            </label>
 
             <select
               value={`${sortBy}-${order}`}

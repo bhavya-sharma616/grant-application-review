@@ -28,6 +28,27 @@ function Alerts() {
     navigate("/login");
   };
 
+  const handleDismiss = async (alertId) => {
+    try {
+      await api.patch(
+        `/alerts/${alertId}/dismiss`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      setHistory((prev) => prev.filter((item) => item._id !== alertId));
+    } catch (error) {
+      console.error(
+        "Failed to dismiss alert:",
+        error.response?.data || error.message,
+      );
+    }
+  };
+
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
@@ -152,6 +173,13 @@ function Alerts() {
                       <ArrowRight size={15} />
                     </button>
                   )}
+
+                  <button
+                    className="alert-dismiss-btn"
+                    onClick={() => handleDismiss(item._id)}
+                  >
+                    Dismiss
+                  </button>
                 </div>
               </div>
             ))}

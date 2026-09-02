@@ -358,3 +358,67 @@ tr:hover td {
   background: #f5f4f7;
   border-color: #aaa5b3;
 }
+.bulk-assignment-btn {
+  padding: 11px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+/* =========================================
+   OVERDUE REVIEWS FILTER
+========================================= */
+
+.overdue-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+
+  height: 50px;
+  box-sizing: border-box;
+
+  padding: 0 15px;
+
+  border: 1px solid #e3e0ea;
+  border-radius: 11px;
+
+  background: #ffffff;
+  color: #514e5c;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  cursor: pointer;
+  white-space: nowrap;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.overdue-filter:hover {
+  border-color: #d5d0e3;
+  background: #faf9fc;
+}
+
+.overdue-filter input {
+  width: 16px;
+  height: 16px;
+
+  margin: 0;
+
+  accent-color: #6256c9;
+
+  cursor: pointer;
+}
+
+.overdue-filter:has(input:checked) {
+  border-color: #d8d2f1;
+  background: #f5f3fd;
+  color: #6256c9;
+  font-weight: 600;
+}

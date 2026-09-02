@@ -66,6 +66,11 @@ const getAlerts = async (req, res) => {
 
 const dismissAlert = async (req, res) => {
   try {
+    if (req.user.role !== "PROGRAM_OFFICER") {
+      return res.status(403).json({
+        message: "Only Program Officers can dismiss alerts",
+      });
+    }
     const alert = await Alert.findById(req.params.id).populate("assignment");
 
     if (!alert) {

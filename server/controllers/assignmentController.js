@@ -80,8 +80,8 @@ const assignReviewer = async (req, res) => {
       dueDate,
     });
 
-    application.status = "UNDER_REVIEW";
-await application.save();
+    application.status = "ASSIGNED";
+    await application.save();
 
     await ApplicationHistory.create({
       application: applicationId,
@@ -200,6 +200,50 @@ const removeAssignment = async (req, res) => {
   }
 };
 
+// Reviewer declines an assignment with a reason
+const declineAssignment = async (req, res) => {
+  try {
+    const { reason } = req.body;
+
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({
+        message: "Decline reason is required",
+      });
+    }
+
+    const assignment = await Assignment.findOne({
+      _id: req.params.id,
+      reviewer: req.user._id,
+      isActive: true,
+    });
+
+    if (!assignment) {
+      return res.status(404).json({
+        message: "Active assignment not found",
+      });
+    }
+
+    await assignment.deleteOne();
+
+    await ApplicationHistory.create({
+      application: assignment.application,
+      action: "ASSIGNMENT_DECLINED",
+      performedBy: req.user._id,
+      reviewer: assignment.reviewer,
+      comment: reason.trim(),
+    });
+
+    return res.json({
+      message: "Assignment declined successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to decline assignment",
+      error: error.message,
+    });
+  }
+};
+
 // Bulk assign reviewers to every application in a funding round
 const bulkAssignReviewers = async (req, res) => {
   try {
@@ -305,7 +349,9 @@ const bulkAssignReviewers = async (req, res) => {
           dueDate,
           isActive: true,
         });
-
+        application.status = "ASSIGNED";
+        await application.save();
+        
         // Add immutable history
         await ApplicationHistory.create({
           application: application._id,
@@ -381,4 +427,5 @@ module.exports = {
   bulkAssignReviewers,
   getReviewers,
   getApplicationAssignments,
+  declineAssignment
 };

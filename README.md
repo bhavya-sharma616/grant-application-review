@@ -55,13 +55,17 @@ Supported application statuses:
 - `UNDER_REVIEW`
 - `DECIDED`
 
-### Reviewer Workflow Foundation
+### Reviewer Workflow
 
-The project includes data models for:
+The project includes functionality for:
 
-- Reviewer assignments
-- Reviews
+- Reviewer assignments with due dates
+- Reviewer assignment limits
+- Reviewer assignment decline with a reason
 - Conflict of interest declarations
+- Review drafts and completed reviews
+- Immutable application history
+- Overdue review alerts
 
 Reviews support three scoring criteria:
 
@@ -107,7 +111,7 @@ Current application-management functionality includes:
 
 ### Reviewer
 
-The application supports a separate Reviewer role and reviewer-specific data relationships for assignments, reviews, and conflicts.
+Reviewers can access applications assigned to them, declare conflicts of interest, decline assignments with a reason, create and complete reviews, and view their review-related workflow data.
 
 ---
 
@@ -236,8 +240,10 @@ The core application-management and reviewer workflow is implemented, including:
 * CSV export of completed reviews
 * Application status workflow validation
 * Requiring at least three completed reviews before an application can be marked as `DECIDED`
+* Reviewer assignment decline with a reason
+* Overdue review alerts with dismissal and reappearance when a revised due date becomes overdue
 
-The remaining work is focused on final UI polish, review of edge cases, alerts/notifications where required, and production deployment.
+The remaining work is focused on final UI polish, review of edge cases, and production deployment.
 
 ---
 

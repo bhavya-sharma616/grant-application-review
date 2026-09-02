@@ -17,7 +17,9 @@ const applicationHistorySchema = new mongoose.Schema(
         "REVIEWER_ASSIGNED",
         "REVIEWER_REMOVED",
         "COMMENT_ADDED",
-        "CONFLICT_DECLARED"
+        "CONFLICT_DECLARED",
+        "REVIEW_COMPLETED",
+        "ASSIGNMENT_DECLINED"
       ],
       required: true,
     },

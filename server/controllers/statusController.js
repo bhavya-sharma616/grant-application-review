@@ -28,6 +28,7 @@ const updateApplicationStatus = async (req, res) => {
 
       const assignmentCount = await Assignment.countDocuments({
         application: application._id,
+        isActive:true
       });
 
       if (assignmentCount === 0) {

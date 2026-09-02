@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import "./Sidebar.css";
 import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import api from "../services/api";
 
 function Sidebar({ user, onLogout }) {
   const navItems = [
@@ -33,6 +35,7 @@ function Sidebar({ user, onLogout }) {
       label: "Alerts",
       icon: Bell,
       path: "/alerts",
+      roles: ["PROGRAM_OFFICER"],
     },
     {
       label: "Conflicts",
@@ -47,6 +50,28 @@ function Sidebar({ user, onLogout }) {
       roles: ["PROGRAM_OFFICER"],
     },
   ];
+  const token = localStorage.getItem("token");
+  const [alertCount, setAlertCount] = useState(0);
+
+  useEffect(() => {
+    if (user?.role !== "PROGRAM_OFFICER") return;
+
+    const fetchAlertCount = async () => {
+      try {
+        const response = await api.get("/alerts", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setAlertCount(response.data.count || 0);
+      } catch (error) {
+        setAlertCount(0);
+      }
+    };
+
+    fetchAlertCount();
+  }, [user?.role, token]);
 
   return (
     <aside className="sidebar">
@@ -81,9 +106,11 @@ function Sidebar({ user, onLogout }) {
                   <Icon size={20} />
                   <span>{item.label}</span>
 
-                  {item.label === "Alerts" && (
-                    <span className="alert-badge">!</span>
-)}
+                  {item.label === "Alerts" &&
+                    user?.role === "PROGRAM_OFFICER" &&
+                    alertCount > 0 && (
+                      <span className="alert-badge">{alertCount}</span>
+                    )}
                 </NavLink>
               );
             })}

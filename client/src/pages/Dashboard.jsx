@@ -47,33 +47,33 @@ function Dashboard() {
   }
 
   const stats = [
-    {
-      title: "Open Applications",
-      value: dashboard.openApplications ?? 0,
-      description: "Currently active applications",
-      icon: FileText,
-    },
-    {
-      title: "Overdue Reviews",
-      value: dashboard.overdueReviews ?? 0,
-      description: "Reviews past their due date",
-      icon: Clock3,
-    },
-    {
-      title: "Ready for Decision",
-      value: dashboard.readyForDecision ?? 0,
-      description: "Applications with 3+ reviews",
-      icon: CircleCheck,
-    },
-    {
-      title: "Amount Requested",
-      value: dashboard?.amountRequested
-        ? `₹${Number(dashboard.amountRequested).toLocaleString("en-IN")}`
-        : "₹0",
-      description: "Submitted this month",
-      icon: IndianRupee,
-    },
-  ];
+  {
+    title: "Open Applications",
+    value: dashboard?.headlineNumbers?.openApplications ?? 0,
+    description: "Currently active applications",
+    icon: FileText,
+  },
+  {
+    title: "Overdue Reviews",
+    value: dashboard?.headlineNumbers?.overdueApplications ?? 0,
+    description: "Reviews past their due date",
+    icon: Clock3,
+  },
+  {
+    title: "Ready for Decision",
+    value: dashboard?.headlineNumbers?.readyForDecision ?? 0,
+    description: "Applications with 3+ reviews",
+    icon: CircleCheck,
+  },
+  {
+    title: "Amount Requested",
+    value: `₹${Number(
+      dashboard?.headlineNumbers?.amountRequestedThisMonth ?? 0
+    ).toLocaleString("en-IN")}`,
+    description: "Submitted this month",
+    icon: IndianRupee,
+  },
+];
 
   return (
     <div className="dashboard-layout">

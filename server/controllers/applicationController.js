@@ -114,6 +114,28 @@ const getApplications = async (req, res) => {
       query.owner = owner;
     }
 
+    // Overdue review filter
+    if (overdue === "true") {
+      const overdueAssignments = await Assignment.find({
+        isActive: true,
+        dueDate: { $lt: new Date() },
+      }).select("application");
+
+      const overdueApplicationIds = overdueAssignments.map(
+        (assignment) => assignment.application,
+      );
+
+      query._id = query._id
+        ? {
+            $in: overdueApplicationIds.filter((applicationId) =>
+              query._id.$in.some(
+                (id) => id.toString() === applicationId.toString(),
+              ),
+            ),
+          }
+        : { $in: overdueApplicationIds };
+    }
+
     const pageNumber = Math.max(Number(page), 1);
     const limitNumber = Math.max(Number(limit), 1);
     const skip = (pageNumber - 1) * limitNumber;

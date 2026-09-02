@@ -178,7 +178,7 @@ A reviewer who declares a conflict has their active assignment deactivated, whil
 
 The dashboard depends on data from the application's other workflows, so it made more sense to build the core pages before focusing on the overview interface.
 
-The dashboard UI was created as a useful overview while backend-driven statistics can continue to be integrated with the remaining workflows.
+The dashboard uses backend-driven statistics from the application's current workflow data, including headline metrics, application status, funding rounds, and decisions per week.
 
 ### Estimated time
 
@@ -277,7 +277,6 @@ The following optional features were not implemented:
 * Budget tracking against funding pools
 * Email notifications
 * Application anonymisation
-* Production deployment
 
 These features were left out because they would add additional product, data, testing, and infrastructure requirements without being necessary for the core grant application review workflow.
 
@@ -293,4 +292,4 @@ Building the application-management foundation first made the codebase easier to
 
 The biggest adjustment during development was recognising that frontend integration and debugging take meaningful time. A feature can be complete on the backend but still require additional work to make state, API calls, loading behaviour, and the UI work together correctly.
 
-If continuing the project, the next sessions would focus on completing the reviewer assignment and review workflows first, then adding the status lifecycle rules, history timeline, alerts, bulk operations, and final deployment.
+If continuing the project, the next sessions would focus on improving test coverage, reviewing edge cases, monitoring the deployed application, and making targeted performance improvements based on real usage.

@@ -9,6 +9,7 @@ import ReviewApplication from "./pages/ReviewApplication";
 import MyReviews from "./pages/MyReviews";
 import Alerts from "./pages/Alerts";
 import Conflicts from "./pages/Conflicts";
+import BulkAssignment from "./pages/BulkAssignment";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/reviews/:id" element={<ReviewApplication />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/conflicts" element={<Conflicts />} />
+          <Route path="/bulk-assignment" element={<BulkAssignment />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

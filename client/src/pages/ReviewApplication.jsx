@@ -269,8 +269,7 @@ function ReviewApplication() {
     return <p>You are not authorized to review applications.</p>;
   }
 
-  const isCompleted =
-  review?.status === "COMPLETED" || conflictDeclared;
+  const isCompleted = review?.status === "COMPLETED" || conflictDeclared;
 
   return (
     <div className="dashboard-layout">
@@ -368,61 +367,66 @@ function ReviewApplication() {
           </div>
         </section>
 
-        <section className="details-card conflict-card">
-          <div className="conflict-header">
-            <div>
-              <p className="section-label">CONFLICT OF INTEREST</p>
-              <h2>Declare a Conflict</h2>
-              <p>
-                If you have a personal, professional, or financial conflict with
-                this application, declare it before submitting your review.
-              </p>
-            </div>
+        {/* Conflict of Interest */}
 
-            <div className="conflict-icon">
-              <AlertTriangle size={22} />
-            </div>
-          </div>
+        <section className="review-conflict-card">
+  <div className="review-conflict-header">
+    <div className="review-conflict-heading">
+      <p className="review-conflict-label">CONFLICT OF INTEREST</p>
 
-          {conflictDeclared ? (
-            <div className="conflict-declared">
-              <CheckCircle size={20} />
+      <h2>Declare a Conflict</h2>
 
-              <div>
-                <strong>Conflict declared</strong>
-                <span>
-                  You have declared a conflict for this application.
-        You can no longer submit a review for it.
-                </span>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="conflict-field">
-                <label htmlFor="conflictReason">Reason</label>
+      <p>
+        If you have a personal, professional, or financial conflict with this
+        application, declare it before submitting your review.
+      </p>
+    </div>
 
-                <textarea
-                  id="conflictReason"
-                  value={conflictReason}
-                  onChange={(e) => setConflictReason(e.target.value)}
-                  placeholder="Explain why you have a conflict of interest..."
-                  rows="4"
-                />
-              </div>
+    <div className="review-conflict-icon">
+      <AlertTriangle size={21} />
+    </div>
+  </div>
 
-              <div className="conflict-actions">
-                <button
-                  type="button"
-                  className="declare-conflict-btn"
-                  onClick={handleDeclareConflict}
-                  disabled={declaringConflict}
-                >
-                  {declaringConflict ? "Declaring..." : "Declare Conflict"}
-                </button>
-              </div>
-            </>
-          )}
-        </section>
+  {conflictDeclared ? (
+    <div className="review-conflict-declared">
+      <CheckCircle size={20} />
+
+      <div>
+        <strong>Conflict declared</strong>
+
+        <span>
+          You have declared a conflict for this application. You can no longer
+          submit a review for it.
+        </span>
+      </div>
+    </div>
+  ) : (
+    <div className="review-conflict-body">
+      <div className="review-conflict-field">
+        <label htmlFor="conflictReason">Reason for conflict</label>
+
+        <textarea
+          id="conflictReason"
+          value={conflictReason}
+          onChange={(e) => setConflictReason(e.target.value)}
+          placeholder="Explain why you have a conflict of interest..."
+          rows={4}
+        />
+      </div>
+
+      <div className="review-conflict-actions">
+        <button
+          type="button"
+          className="review-declare-conflict-btn"
+          onClick={handleDeclareConflict}
+          disabled={declaringConflict}
+        >
+          {declaringConflict ? "Declaring..." : "Declare Conflict"}
+        </button>
+      </div>
+    </div>
+  )}
+</section>
 
         {/* Review Form */}
 

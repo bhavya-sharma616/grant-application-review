@@ -13,6 +13,7 @@ const historyRoutes = require("./routes/historyRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const alertRoutes = require("./routes/alertRoutes");
 const exportRoutes = require("./routes/exportRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/api/auth",authRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/conflicts", conflictRoutes);
 app.use("/api/assignments", assignmentRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/history", historyRoutes);
 app.use("/api/dashboard", dashboardRoutes);

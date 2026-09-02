@@ -44,11 +44,11 @@ This document records decisions that actually shaped the Grant Application Revie
 
 ## Decision 6
 
-- **Chose:** Compound unique indexes on `application + reviewer` for assignments, reviews, and conflicts.
+- **Chosen:** Compound unique indexes on `application + reviewer` for assignments, reviews, and conflicts.
 
 - **Rejected:** Checking for duplicates only in controller code before creating a record.
 
-- **Why:** Controller checks can provide useful error messages, but database-level uniqueness gives an additional guarantee that duplicate reviewer/application relationships cannot be stored, including in edge cases involving multiple requests.
+- **Why:** Controller checks provide useful error messages, but database-level uniqueness gives an additional guarantee that duplicate reviewer/application relationships cannot be stored while the related record exists. Conflict records remain unique so a reviewer who has declared a conflict cannot be added again for the same application.
 
 ## Decision 7
 
