@@ -1,8 +1,8 @@
-const Review = require("../models/Review");
-const Assignment = require("../models/Assignment");
+const Review = require("../models/review");
+const Assignment = require("../models/assignment");
 const GrantApplication = require("../models/GrantApplication");
 const ApplicationHistory = require("../models/ApplicationHistory");
-const Conflict = require("../models/Conflict");
+const Conflict = require("../models/conflict");
 
 // Create or save a draft review
 const createReview = async (req, res) => {

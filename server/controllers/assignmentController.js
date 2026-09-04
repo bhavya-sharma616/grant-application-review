@@ -1,5 +1,5 @@
 const Assignment = require("../models/assignment");
-const Conflict = require("../models/Conflict");
+const Conflict = require("../models/conflict");
 const User = require("../models/User");
 const GrantApplication = require("../models/GrantApplication");
 const ApplicationHistory = require("../models/ApplicationHistory");

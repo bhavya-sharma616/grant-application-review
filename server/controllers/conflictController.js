@@ -1,6 +1,6 @@
-const Conflict = require("../models/Conflict");
+const Conflict = require("../models/conflict");
 const GrantApplication = require("../models/GrantApplication");
-const Assignment = require("../models/Assignment");
+const Assignment = require("../models/assignment");
 const ApplicationHistory = require("../models/ApplicationHistory");
 const declareConflict = async (req, res) => {
   try {
