@@ -1,4 +1,4 @@
-const Review = require("../models/Review");
+const Review = require("../models/review");
 const GrantApplication = require("../models/GrantApplication");
 
 const exportRoundReviews = async (req, res) => {
