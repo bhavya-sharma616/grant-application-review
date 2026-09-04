@@ -1,5 +1,5 @@
 const GrantApplication = require("../models/GrantApplication");
-const Review = require("../models/Review");
+const Review = require("../models/review");
 const Assignment = require("../models/Assignment");
 const ApplicationHistory = require("../models/ApplicationHistory");
 
