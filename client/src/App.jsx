@@ -8,7 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ReviewApplication from "./pages/ReviewApplication";
 import MyReviews from "./pages/MyReviews";
 import Alerts from "./pages/Alerts";
-import Conflicts from "./pages/Conflicts";
+import Conflicts from "./pages/conflicts";
 import BulkAssignment from "./pages/BulkAssignment";
 
 function App() {
