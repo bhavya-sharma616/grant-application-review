@@ -1,5 +1,5 @@
 const Alert = require("../models/Alert");
-const Assignment = require("../models/Assignment");
+const Assignment = require("../models/assignment");
 
 const getAlerts = async (req, res) => {
   try {

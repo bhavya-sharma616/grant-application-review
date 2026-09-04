@@ -1,6 +1,6 @@
 const GrantApplication = require("../models/GrantApplication");
 const Review = require("../models/review");
-const Assignment = require("../models/Assignment");
+const Assignment = require("../models/assignment");
 const ApplicationHistory = require("../models/ApplicationHistory");
 
 const updateApplicationStatus = async (req, res) => {

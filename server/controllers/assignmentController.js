@@ -1,4 +1,4 @@
-const Assignment = require("../models/Assignment");
+const Assignment = require("../models/assignment");
 const Conflict = require("../models/Conflict");
 const User = require("../models/User");
 const GrantApplication = require("../models/GrantApplication");

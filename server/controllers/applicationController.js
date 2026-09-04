@@ -1,5 +1,5 @@
 const GrantApplication = require("../models/GrantApplication");
-const Assignment = require("../models/Assignment");
+const Assignment = require("../models/assignment");
 const ApplicationHistory = require("../models/ApplicationHistory");
 
 // Create application
