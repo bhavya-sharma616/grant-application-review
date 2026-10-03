@@ -3,7 +3,7 @@
 ## Links
 
 - **GitHub repository:** https://github.com/bhavya-sharma616/grant-application-review
-- **Live application:** https://grant-application-review-dun.vercel.app/
+- **Live application:** https://grant-application-review-1.onrender.com/
 
 ## Notes for the reviewer
 
